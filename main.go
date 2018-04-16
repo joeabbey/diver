@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/thebsdbox/diver/pkg/ucp"
+
+	"github.com/spf13/cobra"
 )
 
 type containerStatistics struct {
@@ -28,7 +31,22 @@ type memoryStatistics struct {
 }
 
 func main() {
-	client := ucp.NewBasicAuthClient("docker", "password", "https://docker01.fnnrn.me", true)
+
+	cmd := &cobra.Command{
+		Use:   "diver",
+		Short: "This tool uses the native APIs to deep-dive into Docker EE",
+	}
+
+	client := ucp.Client{}
+
+	cmd.Flags().StringVar(&client.Username, "username", os.Getenv("DIVER_USERNAME"), "Username that has permissions to authenticate to Docker EE")
+	cmd.Flags().StringVar(&client.Password, "password", os.Getenv("DIVER_PASSWORD"), "Password allowing a user to authenticate to Docker EE")
+	cmd.Flags().StringVar(&client.UCPURL, "url", os.Getenv("DIVER_URL"), "URL for Docker EE, e.g. https://10.0.0.1")
+	ignoreCert := strings.ToLower(os.Getenv("DIVER_INSECURE")) == "true"
+
+	cmd.Flags().BoolVar(&client.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
+
+	cmd.Execute()
 	err := client.Connect()
 	if err != nil {
 		fmt.Printf("%v\n", err)
