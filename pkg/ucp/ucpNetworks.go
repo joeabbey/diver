@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+//ListNetworks -
 func (c *Client) ListNetworks() error {
 	// Add the /auth/log to the URL
 	url := fmt.Sprintf("%s/networks", c.UCPURL)

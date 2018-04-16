@@ -31,6 +31,17 @@ func NewBasicAuthClient(username, password, url string, ignoreCert bool) *Client
 
 // Connect - Will attempt to connect to UCP
 func (c *Client) Connect() error {
+	if c.Username == "" {
+		return fmt.Errorf("Username hasn't been entered")
+	}
+
+	if c.Password == "" {
+		return fmt.Errorf("Password is blank")
+	}
+
+	if c.UCPURL == "" {
+		return fmt.Errorf("URL hasn't been entered")
+	}
 	// Add the /auth/log to the URL
 	url := fmt.Sprintf("%s/auth/login", c.UCPURL)
 

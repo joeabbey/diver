@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/thebsdbox/diver/pkg/ucp"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -46,10 +47,15 @@ func main() {
 
 	cmd.Flags().BoolVar(&client.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
+	var logLevel = 5
+	cmd.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+
 	cmd.Execute()
+	log.SetLevel(log.Level(logLevel))
+
 	err := client.Connect()
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		log.Errorf("%v", err)
 	} else {
 		fmt.Printf("Connection success\n")
 		err = client.ListNetworks()
