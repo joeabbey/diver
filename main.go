@@ -35,7 +35,7 @@ func main() {
 
 	cmd := &cobra.Command{
 		Use:   "diver",
-		Short: "This tool uses the native APIs to deep-dive into Docker EE",
+		Short: "This tool uses the native APIs to \"dive\" into Docker EE",
 	}
 
 	client := ucp.Client{}
@@ -58,13 +58,17 @@ func main() {
 		log.Errorf("%v", err)
 	} else {
 		fmt.Printf("Connection success\n")
-		err = client.ListNetworks()
+		// err = client.ListNetworks()
+		// if err != nil {
+		// 	log.Errorf("%v\n", err)
+		// }
+		// err = client.ListContainerJSON()
+		// if err != nil {
+		// 	log.Errorf("%v\n", err)
+		// }
+		err = client.GetContainerCount()
 		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-		err = client.ListContainers()
-		if err != nil {
-			fmt.Printf("%v\n", err)
+			log.Errorf("%v\n", err)
 		}
 	}
 }
