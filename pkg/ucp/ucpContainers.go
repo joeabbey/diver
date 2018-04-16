@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/docker/docker/api/types"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // ListContainerJSON -
@@ -32,18 +34,58 @@ func (c *Client) GetContainerCount() error {
 	if err != nil {
 		return err
 	}
-	var container []types.Container
+	var containers []types.Container
 
-	err = json.Unmarshal(response, &container)
+	err = json.Unmarshal(response, &containers)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Found %d containers\n", len(container))
+	fmt.Printf("Found %d containers\n", len(containers))
 	return nil
 }
 
+// GetContainerNames - lists the names of all containers
+func (c *Client) GetContainerNames() error {
+	response, err := c.getAllContainers()
+	if err != nil {
+		return err
+	}
+	var containers []types.Container
+
+	err = json.Unmarshal(response, &containers)
+	if err != nil {
+		return err
+	}
+
+	for i := range containers {
+		fmt.Println(containers[i].Names)
+	}
+	return nil
+}
+
+func (c *Client) getContainerMem(id string) (uint64, uint64, error) {
+	url := fmt.Sprintf("%s/containers/%s/stats?stream=false", c.UCPURL, id)
+
+	log.Debugf("Retrieving %s", url)
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var stats types.Stats
+
+	err = json.Unmarshal(response, &stats)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return stats.MemoryStats.Usage, stats.MemoryStats.Limit, nil
+
+}
+
 func (c *Client) getAllContainers() ([]byte, error) {
+	log.Debugf("Retrieving all containers")
 	url := fmt.Sprintf("%s/containers/json", c.UCPURL)
 
 	response, err := c.getRequest(url, nil)
@@ -52,4 +94,37 @@ func (c *Client) getAllContainers() ([]byte, error) {
 	}
 
 	return response, nil
+}
+
+// ContainerTop -
+func (c *Client) ContainerTop() error {
+	response, err := c.getAllContainers()
+	if err != nil {
+		return err
+	}
+	var containers []types.Container
+
+	log.Debugf("Parsing all containers")
+	err = json.Unmarshal(response, &containers)
+	if err != nil {
+		return err
+	}
+
+	for i := range containers {
+		name := containers[i].Names
+		id := containers[i].ID
+		usage, limit, err := c.getContainerMem(id)
+		if err != nil {
+			return nil
+		}
+		percentage := ((float64(usage) / float64(limit)) * 100)
+		if percentage > 90 {
+			fmt.Printf("\033[35m%0.2f%%\033[m  %s %s\n", percentage, id, name)
+		} else if percentage > 75 {
+			fmt.Printf("\033[35m%0.2f%%\033[m  %s %s\n", percentage, id, name)
+		} else {
+			fmt.Printf("\033[32m%0.2f%%\033[m  %s %s\n", percentage, id, name)
+		}
+	}
+	return nil
 }

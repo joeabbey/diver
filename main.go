@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+
 	"github.com/docker/docker/client"
 	"github.com/thebsdbox/diver/pkg/ucp"
 
@@ -57,7 +58,6 @@ func main() {
 	if err != nil {
 		log.Errorf("%v", err)
 	} else {
-		fmt.Printf("Connection success\n")
 		// err = client.ListNetworks()
 		// if err != nil {
 		// 	log.Errorf("%v\n", err)
@@ -66,7 +66,7 @@ func main() {
 		// if err != nil {
 		// 	log.Errorf("%v\n", err)
 		// }
-		err = client.GetContainerCount()
+		err = client.ContainerTop()
 		if err != nil {
 			log.Errorf("%v\n", err)
 		}
