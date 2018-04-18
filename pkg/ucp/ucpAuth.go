@@ -101,6 +101,10 @@ func (c *Client) AddAccount(account *Account) error {
 	}
 	response, err := c.postRequest(url, b)
 	if err != nil {
+		err = parseUCPError(err.Error())
+		if err != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
 		return err
 	}
 
