@@ -122,6 +122,26 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 	return bytes, nil
 }
 
+// DELETE data from the server and return the response as bytes
+func (c *Client) delRequest(url string, d []byte) ([]byte, error) {
+
+	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(d))
+	if err != nil {
+		return nil, err
+	}
+
+	// Add authorisation token to HTTP header
+	if len(token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.IgnoreCert},
@@ -139,10 +159,13 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	switch resp.StatusCode {
 	case 200:
-		log.Debug("HTTP Status code 200")
+		log.Debug("[success] HTTP Status code 200")
 		return body, nil
 	case 201:
-		log.Debug("HTTP Status code 201")
+		log.Debug("[success] HTTP Status code 201")
+		return body, nil
+	case 204:
+		log.Debug("[success] HTTP Status code 204")
 		return body, nil
 	}
 
