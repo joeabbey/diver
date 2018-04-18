@@ -112,3 +112,20 @@ func (c *Client) AddAccount(account *Account) error {
 
 	return nil
 }
+
+//DeleteAccount - deletes an account in UCP
+func (c *Client) DeleteAccount(account string) error {
+	log.Infof("Deleting account for user [%s]", account)
+
+	url := fmt.Sprintf("%s/accounts/%s", c.UCPURL, account)
+
+	_, err := c.delRequest(url, nil)
+	if err != nil {
+		err = parseUCPError(err.Error())
+		if err != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
+		return err
+	}
+	return nil
+}

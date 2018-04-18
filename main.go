@@ -71,8 +71,12 @@ func main() {
 		// 	log.Errorf("%v\n", err)
 		// }
 
-		user := ucp.NewUser("dan finneran", "dan1", "password", true, true, false)
+		user := ucp.NewUser("dan finneran", "dan", "password", true, true, false)
 		err = client.AddAccount(user)
+		if err != nil {
+			log.Errorf("%v\n", err)
+		}
+		err = client.DeleteAccount("dan1")
 		if err != nil {
 			log.Errorf("%v\n", err)
 		}
