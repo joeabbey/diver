@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // Client - Is the basic Client struct
@@ -81,10 +83,18 @@ func (c *Client) Disconnect() error {
 
 // POST data to the server and return the response as bytes
 func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
+
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(d))
 	if err != nil {
 		return nil, err
 	}
+
+	// Add authorisation token to HTTP header
+	if len(token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+	req.Header.Add("Content-Type", "application/json")
+
 	bytes, err := c.doRequest(req)
 	if err != nil {
 		return nil, err
@@ -94,13 +104,17 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 
 // GET data from the server and return the response as bytes
 func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
+
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer(d))
-	if len(token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-	}
 	if err != nil {
 		return nil, err
 	}
+
+	// Add authorisation token to HTTP header
+	if len(token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
+
 	bytes, err := c.doRequest(req)
 	if err != nil {
 		return nil, err
@@ -122,8 +136,16 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if 200 != resp.StatusCode {
-		return nil, fmt.Errorf("%s", body)
+
+	switch resp.StatusCode {
+	case 200:
+		log.Debug("HTTP Status code 200")
+		return body, nil
+	case 201:
+		log.Debug("HTTP Status code 201")
+		return body, nil
 	}
-	return body, nil
+
+	log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
+	return nil, fmt.Errorf("%s", body)
 }

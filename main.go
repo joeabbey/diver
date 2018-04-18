@@ -66,7 +66,13 @@ func main() {
 		// if err != nil {
 		// 	log.Errorf("%v\n", err)
 		// }
-		err = client.GetClientBundle()
+		// err = client.GetClientBundle()
+		// if err != nil {
+		// 	log.Errorf("%v\n", err)
+		// }
+
+		user := ucp.NewUser("dan finneran", "dan", "password", true, true, false)
+		err = client.AddAccount(user)
 		if err != nil {
 			log.Errorf("%v\n", err)
 		}
