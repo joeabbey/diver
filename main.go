@@ -66,7 +66,7 @@ func main() {
 		// if err != nil {
 		// 	log.Errorf("%v\n", err)
 		// }
-		err = client.ContainerTop()
+		err = client.GetClientBundle()
 		if err != nil {
 			log.Errorf("%v\n", err)
 		}
