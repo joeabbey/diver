@@ -6,16 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
 
 	"github.com/docker/docker/client"
-	"github.com/thebsdbox/diver/pkg/ucp"
-
-	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
+	"github.com/thebsdbox/diver/cmd"
 )
 
 type containerStatistics struct {
@@ -33,54 +29,7 @@ type memoryStatistics struct {
 }
 
 func main() {
-
-	cmd := &cobra.Command{
-		Use:   "diver",
-		Short: "This tool uses the native APIs to \"dive\" into Docker EE",
-	}
-
-	client := ucp.Client{}
-
-	cmd.Flags().StringVar(&client.Username, "username", os.Getenv("DIVER_USERNAME"), "Username that has permissions to authenticate to Docker EE")
-	cmd.Flags().StringVar(&client.Password, "password", os.Getenv("DIVER_PASSWORD"), "Password allowing a user to authenticate to Docker EE")
-	cmd.Flags().StringVar(&client.UCPURL, "url", os.Getenv("DIVER_URL"), "URL for Docker EE, e.g. https://10.0.0.1")
-	ignoreCert := strings.ToLower(os.Getenv("DIVER_INSECURE")) == "true"
-
-	cmd.Flags().BoolVar(&client.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
-
-	var logLevel = 5
-	cmd.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
 	cmd.Execute()
-	log.SetLevel(log.Level(logLevel))
-
-	err := client.Connect()
-	if err != nil {
-		log.Errorf("%v", err)
-	} else {
-		// err = client.ListNetworks()
-		// if err != nil {
-		// 	log.Errorf("%v\n", err)
-		// }
-		// err = client.ListContainerJSON()
-		// if err != nil {
-		// 	log.Errorf("%v\n", err)
-		// }
-		// err = client.GetClientBundle()
-		// if err != nil {
-		// 	log.Errorf("%v\n", err)
-		// }
-
-		user := ucp.NewUser("dan finneran", "dan", "password", true, true, false)
-		err = client.AddAccount(user)
-		if err != nil {
-			log.Errorf("%v\n", err)
-		}
-		err = client.DeleteAccount("dan1")
-		if err != nil {
-			log.Errorf("%v\n", err)
-		}
-	}
 }
 
 func dockerSocketConnect() {

@@ -21,6 +21,12 @@ type Account struct {
 	SearchLDAP bool   `json:"searchLDAP"`
 }
 
+// Team - is the structure for defining a team
+type Team struct {
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
 //GetClientBundle - will download the UCP Client Bundle
 func (c *Client) GetClientBundle() error {
 
@@ -118,6 +124,49 @@ func (c *Client) DeleteAccount(account string) error {
 	log.Infof("Deleting account for user [%s]", account)
 
 	url := fmt.Sprintf("%s/accounts/%s", c.UCPURL, account)
+
+	_, err := c.delRequest(url, nil)
+	if err != nil {
+		err = parseUCPError(err.Error())
+		if err != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
+		return err
+	}
+	return nil
+}
+
+//AddTeamToOrganisation - adds a team to an existing organisation
+func (c *Client) AddTeamToOrganisation(team *Team, org string) error {
+	log.Infof("Creating team [%s]", team.Name)
+
+	url := fmt.Sprintf("%s/accounts/%s/teams", c.UCPURL, org)
+
+	b, err := json.Marshal(team)
+
+	log.Debugf("%s", string(b))
+	if err != nil {
+		return err
+	}
+	response, err := c.postRequest(url, b)
+	if err != nil {
+		err = parseUCPError(err.Error())
+		if err != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
+		return err
+	}
+
+	log.Debugf("%v", string(response))
+
+	return nil
+}
+
+//DeleteTeamFromOrganisation - deletes an account in UCP
+func (c *Client) DeleteTeamFromOrganisation(team, org string) error {
+	log.Infof("Deleting team [%s] from org [%s]", team, org)
+
+	url := fmt.Sprintf("%s/accounts/%s/teams/%s", c.UCPURL, org, team)
 
 	_, err := c.delRequest(url, nil)
 	if err != nil {
