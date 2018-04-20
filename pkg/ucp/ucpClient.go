@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -17,9 +18,8 @@ type Client struct {
 	Password   string
 	UCPURL     string
 	IgnoreCert bool
+	Token      string
 }
-
-var token string
 
 // NewBasicAuthClient - Creates a basic client to connecto the UCP
 func NewBasicAuthClient(username, password, url string, ignoreCert bool) *Client {
@@ -68,7 +68,7 @@ func (c *Client) Connect() error {
 		return err
 	}
 	if responseData["auth_token"] != nil {
-		token = responseData["auth_token"].(string)
+		c.Token = responseData["auth_token"].(string)
 	} else {
 		return fmt.Errorf("No Authorisation token returned")
 	}
@@ -90,8 +90,8 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 	}
 
 	// Add authorisation token to HTTP header
-	if len(token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	if len(c.Token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
 	req.Header.Add("Content-Type", "application/json")
 
@@ -111,8 +111,8 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 	}
 
 	// Add authorisation token to HTTP header
-	if len(token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	if len(c.Token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
 
 	bytes, err := c.doRequest(req)
@@ -131,8 +131,8 @@ func (c *Client) delRequest(url string, d []byte) ([]byte, error) {
 	}
 
 	// Add authorisation token to HTTP header
-	if len(token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	if len(c.Token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
 
 	bytes, err := c.doRequest(req)
@@ -171,4 +171,64 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 	return nil, fmt.Errorf("%s", body)
+}
+
+type internal struct {
+	UCPAddress string `json:"address"`
+	Token      string `json:"token"`
+	IgnoreCert bool   `json:"ignoreCert"`
+}
+
+// WriteToken - Writes a copy of the token to the
+func (c *Client) WriteToken() error {
+
+	if c.Token == "" {
+		return fmt.Errorf("Not logged in, or no UCP token present")
+	}
+
+	// build path
+	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
+	log.Debugln("Writing Token to [%s]", path)
+
+	clientToken := internal{
+		UCPAddress: c.UCPURL,
+		Token:      c.Token,
+		IgnoreCert: c.IgnoreCert,
+	}
+
+	b, err := json.Marshal(clientToken)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, b, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ReadToken - Reads the token from a file
+func ReadToken() (*Client, error) {
+	// build path
+	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
+	log.Debugf("Reading Token from [%s]", path)
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	clientToken := internal{}
+
+	err = json.Unmarshal(data, &clientToken)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &Client{
+		UCPURL:     clientToken.UCPAddress,
+		Token:      clientToken.Token,
+		IgnoreCert: clientToken.IgnoreCert,
+	}
+
+	return client, nil
 }

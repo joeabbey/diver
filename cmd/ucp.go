@@ -12,6 +12,9 @@ import (
 
 var logLevel = 5
 var client ucp.Client
+var auth ucp.Account
+
+var filepath, action string
 
 func init() {
 	diverCmd.AddCommand(ucpRoot)
@@ -27,6 +30,16 @@ func init() {
 	ucpRoot.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	// Add subcommands
+	ucpAuth.Flags().StringVar(&auth.FullName, "fullname", "", "The full name of a UCP user or organisation")
+	ucpAuth.Flags().StringVar(&auth.Name, "username", "", "The unique username organisation")
+	ucpAuth.Flags().StringVar(&auth.Password, "password", "", "A string password for a new user of organisation")
+	ucpAuth.Flags().BoolVar(&auth.IsAdmin, "admin", false, "Make this user an administrator")
+	ucpAuth.Flags().BoolVar(&auth.IsActive, "active", true, "Enable this user in the Universal Control Plane")
+	ucpAuth.Flags().BoolVar(&auth.IsOrg, "isorg", false, "Create an Organisation")
+	ucpAuth.Flags().StringVar(&filepath, "file", "", "Read users from a file [csv currently supported]")
+	ucpAuth.Flags().StringVar(&action, "action", "create", "Action to be performed [create/delete/update]")
+	ucpAuth.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+
 	ucpRoot.AddCommand(ucpAuth)
 
 }
@@ -35,6 +48,21 @@ var ucpRoot = &cobra.Command{
 	Use:   "ucp",
 	Short: "Universal Control Plane ",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// Error checking flags/variables
+		if client.Username == "" {
+			log.Errorln("UCP Username is required")
+			cmd.Help()
+		}
+		if client.Password == "" {
+			log.Errorln("UCP Password is required")
+			cmd.Help()
+		}
+		if client.UCPURL == "" {
+			log.Errorln("UCP URL is required [https://<address/]")
+			cmd.Help()
+		}
+
 		log.SetLevel(log.Level(logLevel))
 		err := client.Connect()
 		if err != nil {
@@ -53,22 +81,75 @@ var ucpRoot = &cobra.Command{
 			// 	log.Errorf("%v\n", err)
 			// }
 
-			user := ucp.NewUser("dan finneran", "dan", "password", true, true, false)
-			err = client.AddAccount(user)
+			// user := ucp.NewUser("dan finneran", "dan", "password", true, true, false)
+			// err = client.AddAccount(user)
+			// if err != nil {
+			// 	log.Errorf("%v\n", err)
+			// }
+			// err = client.DeleteAccount("dan1")
+			// if err != nil {
+			// 	log.Errorf("%v\n", err)
+			// }
+
+			err = client.WriteToken()
 			if err != nil {
-				log.Errorf("%v\n", err)
-			}
-			err = client.DeleteAccount("dan1")
-			if err != nil {
-				log.Errorf("%v\n", err)
+				log.Errorf("%v", err)
 			}
 		}
 	},
 }
 
 var ucpAuth = &cobra.Command{
-	Use:   "Auth",
+	Use:   "auth",
 	Short: "Authorisation commands for users, groups and teams",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		// if action == "" {
+		// 	cmd.Help()
+		// 	log.Fatalf("--action is a required flag")
+		// }
+		// A file has been passed in, so parse it and return
+		if filepath != "" {
+			_, err := ucp.ReadToken()
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+			log.Debugf("Started parsing [%s]", filepath)
+
+		} else {
+			// Parse flags/variables
+
+			client, err := ucp.ReadToken()
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+
+			switch action {
+			case "create":
+				err = client.AddAccount(&auth)
+			case "delete":
+				err = client.DeleteAccount(auth.Name)
+			case "update":
+				log.Errorf("Not supported (yet)")
+			default:
+				log.Errorf("Unknown action [%s]", action)
+				cmd.Help()
+			}
+
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+		}
+	},
+}
+
+var ucpUser = &cobra.Command{
+	Use:   "user",
+	Short: "Modify Universal Control plane users",
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 }
