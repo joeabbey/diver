@@ -16,6 +16,8 @@ var auth ucp.Account
 
 var filepath, action string
 
+var top bool
+
 func init() {
 	diverCmd.AddCommand(ucpRoot)
 	//client := ucp.Client{}
@@ -39,8 +41,12 @@ func init() {
 	ucpAuth.Flags().StringVar(&filepath, "file", "", "Read users from a file [csv currently supported]")
 	ucpAuth.Flags().StringVar(&action, "action", "create", "Action to be performed [create/delete/update]")
 	ucpAuth.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
 	ucpRoot.AddCommand(ucpAuth)
+
+	ucpContainer.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+
+	ucpContainer.Flags().BoolVar(&top, "top", false, "Enable TOP for watching running containers")
+	ucpRoot.AddCommand(ucpContainer)
 
 }
 
@@ -148,9 +154,23 @@ var ucpAuth = &cobra.Command{
 	},
 }
 
-var ucpUser = &cobra.Command{
-	Use:   "user",
-	Short: "Modify Universal Control plane users",
+var ucpContainer = &cobra.Command{
+	Use:   "containers",
+	Short: "Interact with containers",
 	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		if top == true {
+			client, err := ucp.ReadToken()
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+			err = client.ContainerTop()
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+		}
 	},
 }

@@ -53,6 +53,12 @@ This will create a new **user** called `bob`, to create an organisation use the 
                  --action create
 ```
 
+**Watching Containers**
+
+This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
+
+![](img/container-top.jpg)
+
 **Debugging Issues**
 
 When errors are reported turn up the `--logLevel` to 5, which enables debugging output.
