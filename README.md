@@ -55,7 +55,7 @@ This will create a new **user** called `bob`, to create an organisation use the 
 
 **Watching Containers**
 
-This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
+This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
 
 ![](img/container-top.jpg)
 
