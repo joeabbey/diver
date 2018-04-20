@@ -53,9 +53,23 @@ This will create a new **user** called `bob`, to create an organisation use the 
                  --action create
 ```
 
+**Downloading the client bundle**
+
+Download the client bundle to your local machine.
+
+```
+./diver ucp client-bundle
+INFO[0000] Downloading the UCP Client Bundle            
+```
+
 **Watching Containers**
 
 This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
+
+
+```
+./diver ucp containers --top
+```
 
 ![](img/container-top.jpg)
 

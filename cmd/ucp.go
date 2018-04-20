@@ -47,7 +47,7 @@ func init() {
 
 	ucpContainer.Flags().BoolVar(&top, "top", false, "Enable TOP for watching running containers")
 	ucpRoot.AddCommand(ucpContainer)
-
+	ucpRoot.AddCommand(ucpCliBundle)
 }
 
 var ucpRoot = &cobra.Command{
@@ -172,5 +172,25 @@ var ucpContainer = &cobra.Command{
 				log.Fatalf("%v", err)
 			}
 		}
+	},
+}
+
+var ucpCliBundle = &cobra.Command{
+	Use:   "client-bundle",
+	Short: "download the client bundle for UCP",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the torken
+			log.Fatalf("%v", err)
+		}
+		err = client.GetClientBundle()
+		if err != nil {
+			// Fatal error if can't read the torken
+			log.Fatalf("%v", err)
+		}
+
 	},
 }
