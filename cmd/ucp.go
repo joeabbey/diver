@@ -95,6 +95,7 @@ var ucpRoot = &cobra.Command{
 			if err != nil {
 				log.Errorf("%v", err)
 			}
+			log.Infof("Succesfully logged into [%s]", client.UCPURL)
 		}
 	},
 }
