@@ -16,7 +16,7 @@ var auth ucp.Account
 
 var filepath, action string
 
-var top bool
+var top, exampleFile bool
 
 func init() {
 	diverCmd.AddCommand(ucpRoot)
@@ -39,6 +39,8 @@ func init() {
 	ucpAuth.Flags().BoolVar(&auth.IsActive, "active", true, "Enable this user in the Universal Control Plane")
 	ucpAuth.Flags().BoolVar(&auth.IsOrg, "isorg", false, "Create an Organisation")
 	ucpAuth.Flags().StringVar(&filepath, "file", "", "Read users from a file [csv currently supported]")
+	ucpAuth.Flags().BoolVar(&exampleFile, "examplecsv", false, "Create an example csv file [example_accounts.csv]")
+
 	ucpAuth.Flags().StringVar(&action, "action", "create", "Action to be performed [create/delete/update]")
 	ucpAuth.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpRoot.AddCommand(ucpAuth)
@@ -111,20 +113,30 @@ var ucpAuth = &cobra.Command{
 	Short: "Authorisation commands for users, groups and teams",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
-
-		// if action == "" {
-		// 	cmd.Help()
-		// 	log.Fatalf("--action is a required flag")
-		// }
+		if exampleFile == true {
+			log.Infof("Creating example CSV file for UCP accounts [example_accounts.csv]")
+			err := ucp.CreateExampleAccountCSV()
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+			os.Exit(0)
+		}
 		// A file has been passed in, so parse it and return
 		if filepath != "" {
-			_, err := ucp.ReadToken()
+			log.Info("Importing Accounts from file")
+			client, err := ucp.ReadToken()
 			if err != nil {
 				// Fatal error if can't read the torken
 				log.Fatalf("%v", err)
 			}
 			log.Debugf("Started parsing [%s]", filepath)
-
+			err = client.ImportAccountsFromCSV(filepath)
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+			os.Exit(0)
 		} else {
 			// Parse flags/variables
 
