@@ -2,10 +2,12 @@ package ucp
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -153,6 +155,7 @@ func (c *Client) AddTeamToOrganisation(team *Team, org string) error {
 		err = parseUCPError(err.Error())
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
+			log.Debugf("%v", response)
 		}
 		return err
 	}
@@ -177,4 +180,103 @@ func (c *Client) DeleteTeamFromOrganisation(team, org string) error {
 		return err
 	}
 	return nil
+}
+
+//ImportAccountsFromCSV -
+func (c *Client) ImportAccountsFromCSV(path string) error {
+	csvFile, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer csvFile.Close()
+
+	csvLines, err := csv.NewReader(csvFile).ReadAll()
+	if err != nil {
+		return nil
+	}
+
+	var accounts []Account
+
+	// Parsing from a CSV to a GO struct is a bit messy, using the ParseBool method
+	log.Infof("Parsing CSV file [%s]", path)
+	for _, line := range csvLines {
+
+		var acct Account
+		acct.FullName = line[0]
+		// Is Active
+		var b bool
+		b, err := strconv.ParseBool(line[1])
+		if err != nil {
+			return err
+		}
+		acct.IsActive = b
+		// Is Admin
+		b, err = strconv.ParseBool(line[2])
+		if err != nil {
+			return err
+		}
+		acct.IsAdmin = b
+
+		// Is Org
+		b, err = strconv.ParseBool(line[3])
+		if err != nil {
+			return err
+		}
+		acct.IsOrg = b
+
+		// Name       string `json:"name"`
+		acct.Name = line[4]
+		// Password   string `json:"password"`
+		acct.Password = line[5]
+		// SearchLDAP bool   `json:"searchLDAP"`
+		b, err = strconv.ParseBool(line[6])
+		if err != nil {
+			return err
+		}
+		acct.SearchLDAP = b
+		accounts = append(accounts, acct)
+	}
+
+	log.Debugf("About to add %d accounts", len(accounts))
+
+	//TODO - loop through accounts array and add accounts
+	for _, acct := range accounts {
+		c.AddAccount(&acct)
+	}
+
+	return nil
+}
+
+//CreateExampleAccountCSV -
+func CreateExampleAccountCSV() error {
+	path := "example_accounts.csv"
+
+	csvFile, err := os.Create(path)
+	if err != nil {
+		return nil
+	}
+	defer csvFile.Close()
+
+	writer := csv.NewWriter(csvFile)
+	defer writer.Flush()
+
+	acct := Account{
+		FullName:   "John Candy",
+		IsActive:   true,
+		IsAdmin:    true,
+		IsOrg:      false,
+		Name:       "jcandy",
+		Password:   "Gr3At0utd00r5",
+		SearchLDAP: false,
+	}
+
+	var csvString = []string{acct.FullName,
+		strconv.FormatBool(acct.IsActive),
+		strconv.FormatBool(acct.IsAdmin),
+		strconv.FormatBool(acct.IsOrg),
+		acct.Name,
+		acct.Password,
+		strconv.FormatBool(acct.SearchLDAP)}
+
+	return writer.Write(csvString)
 }
