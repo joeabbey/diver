@@ -185,13 +185,13 @@ func (c *Client) DeleteTeamFromOrganisation(team, org string) error {
 func (c *Client) ImportAccountsFromCSV(path string) error {
 	csvFile, err := os.Open(path)
 	if err != nil {
-		return nil
+		return err
 	}
 	defer csvFile.Close()
 
 	csvLines, err := csv.NewReader(csvFile).ReadAll()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	var accounts []Account
@@ -268,12 +268,55 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 		case 1:
 			c.DeleteAccount(accounts[i].Name)
 		case 2:
-			log.Warnf("Not implemented yet") //
+			log.Warnf("Not implemented yet") //TODO
 		default:
 			return fmt.Errorf("Unknown action being performed on user [%s]", accounts[i].FullName)
 		}
 	}
 
+	return nil
+}
+
+//ExportAccountsToCSV -
+func (c *Client) ExportAccountsToCSV(path string) error {
+
+	log.Infof("Retrieving Accounts from UCP")
+	// Build the URL (TODO set limit)
+	url := fmt.Sprintf("%s/accounts/?filter=all&limit=1000", c.UCPURL)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return err
+	}
+
+	var accountList struct {
+		Accounts []Account `json:"accounts"`
+	}
+
+	err = json.Unmarshal(response, &accountList)
+	if err != nil {
+		return err
+	}
+
+	csvFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer csvFile.Close()
+
+	writer := csv.NewWriter(csvFile)
+	defer writer.Flush()
+
+	for _, acct := range accountList.Accounts {
+		var csvString = []string{acct.FullName,
+			strconv.FormatBool(acct.IsActive),
+			strconv.FormatBool(acct.IsAdmin),
+			strconv.FormatBool(acct.IsOrg),
+			acct.Name,
+			acct.Password,
+			strconv.FormatBool(acct.SearchLDAP)}
+		writer.Write(csvString)
+	}
 	return nil
 }
 
@@ -283,7 +326,7 @@ func CreateExampleAccountCSV() error {
 
 	csvFile, err := os.Create(path)
 	if err != nil {
-		return nil
+		return err
 	}
 	defer csvFile.Close()
 
