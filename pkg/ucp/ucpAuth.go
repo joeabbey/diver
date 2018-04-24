@@ -155,7 +155,6 @@ func (c *Client) AddTeamToOrganisation(team *Team, org string) error {
 		err = parseUCPError(err.Error())
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
-			log.Debugf("%v", response)
 		}
 		return err
 	}
@@ -197,39 +196,56 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 
 	var accounts []Account
 
+	var action []int8 // 0 = create, 1 = delete, 2 = update
+
 	// Parsing from a CSV to a GO struct is a bit messy, using the ParseBool method
 	log.Infof("Parsing CSV file [%s]", path)
 	for _, line := range csvLines {
 
+		// Parse the action
+		switch line[0] {
+		case "create":
+			log.Debug("Creating a new account")
+			action = append(action, 0)
+		case "delete":
+			log.Debug("Deleting an existing account")
+			action = append(action, 1)
+		case "update":
+			log.Debug("Updating an existing account")
+			action = append(action, 2)
+		default:
+			return fmt.Errorf("Unknown action [%s] on account", line[0])
+		}
+
 		var acct Account
-		acct.FullName = line[0]
+		acct.FullName = line[1]
 		// Is Active
 		var b bool
-		b, err := strconv.ParseBool(line[1])
+		b, err := strconv.ParseBool(line[2])
 		if err != nil {
 			return err
 		}
 		acct.IsActive = b
 		// Is Admin
-		b, err = strconv.ParseBool(line[2])
+		b, err = strconv.ParseBool(line[3])
 		if err != nil {
 			return err
 		}
 		acct.IsAdmin = b
 
 		// Is Org
-		b, err = strconv.ParseBool(line[3])
+		b, err = strconv.ParseBool(line[4])
 		if err != nil {
 			return err
 		}
 		acct.IsOrg = b
 
 		// Name       string `json:"name"`
-		acct.Name = line[4]
+		acct.Name = line[5]
 		// Password   string `json:"password"`
-		acct.Password = line[5]
+		acct.Password = line[6]
 		// SearchLDAP bool   `json:"searchLDAP"`
-		b, err = strconv.ParseBool(line[6])
+		b, err = strconv.ParseBool(line[7])
 		if err != nil {
 			return err
 		}
@@ -240,8 +256,22 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 	log.Debugf("About to add %d accounts", len(accounts))
 
 	//TODO - loop through accounts array and add accounts
-	for _, acct := range accounts {
-		c.AddAccount(&acct)
+
+	if len(accounts) != len(action) {
+		return fmt.Errorf("Actions doesn't match the number of accounts")
+	}
+
+	for i := range accounts {
+		switch action[i] {
+		case 0:
+			c.AddAccount(&accounts[i])
+		case 1:
+			c.DeleteAccount(accounts[i].Name)
+		case 2:
+			log.Warnf("Not implemented yet") //
+		default:
+			return fmt.Errorf("Unknown action being performed on user [%s]", accounts[i].FullName)
+		}
 	}
 
 	return nil
@@ -270,7 +300,10 @@ func CreateExampleAccountCSV() error {
 		SearchLDAP: false,
 	}
 
-	var csvString = []string{acct.FullName,
+	action := "create"
+
+	var csvString = []string{action,
+		acct.FullName,
 		strconv.FormatBool(acct.IsActive),
 		strconv.FormatBool(acct.IsAdmin),
 		strconv.FormatBool(acct.IsOrg),
