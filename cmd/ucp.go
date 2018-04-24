@@ -14,7 +14,7 @@ var logLevel = 5
 var client ucp.Client
 var auth ucp.Account
 
-var filepath, action string
+var importPath, exportPath, action string
 
 var top, exampleFile bool
 
@@ -38,8 +38,10 @@ func init() {
 	ucpAuth.Flags().BoolVar(&auth.IsAdmin, "admin", false, "Make this user an administrator")
 	ucpAuth.Flags().BoolVar(&auth.IsActive, "active", true, "Enable this user in the Universal Control Plane")
 	ucpAuth.Flags().BoolVar(&auth.IsOrg, "isorg", false, "Create an Organisation")
-	ucpAuth.Flags().StringVar(&filepath, "file", "", "Read users from a file [csv currently supported]")
-	ucpAuth.Flags().BoolVar(&exampleFile, "examplecsv", false, "Create an example csv file [example_accounts.csv]")
+	ucpAuth.Flags().StringVar(&importPath, "importCSV", "", "Import accounts from a file [csv currently supported]")
+	ucpAuth.Flags().StringVar(&exportPath, "exportCSV", "", "Export users to a file [csv currently supported]")
+
+	ucpAuth.Flags().BoolVar(&exampleFile, "exampleCSV", false, "Create an example csv file [example_accounts.csv]")
 
 	ucpAuth.Flags().StringVar(&action, "action", "create", "Action to be performed [create/delete/update]")
 	ucpAuth.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
@@ -123,15 +125,29 @@ var ucpAuth = &cobra.Command{
 			os.Exit(0)
 		}
 		// A file has been passed in, so parse it and return
-		if filepath != "" {
+		if importPath != "" {
 			log.Info("Importing Accounts from file")
 			client, err := ucp.ReadToken()
 			if err != nil {
 				// Fatal error if can't read the torken
 				log.Fatalf("%v", err)
 			}
-			log.Debugf("Started parsing [%s]", filepath)
-			err = client.ImportAccountsFromCSV(filepath)
+			log.Debugf("Started parsing [%s]", importPath)
+			err = client.ImportAccountsFromCSV(importPath)
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+			os.Exit(0)
+		}
+		if exportPath != "" {
+			log.Infof("Exporting Accounts to file [%s]", exportPath)
+			client, err := ucp.ReadToken()
+			if err != nil {
+				// Fatal error if can't read the torken
+				log.Fatalf("%v", err)
+			}
+			err = client.ExportAccountsToCSV(exportPath)
 			if err != nil {
 				// Fatal error if can't read the torken
 				log.Fatalf("%v", err)
@@ -139,7 +155,9 @@ var ucpAuth = &cobra.Command{
 			os.Exit(0)
 		} else {
 			// Parse flags/variables
-
+			if auth.Name == "" {
+				log.Fatalf("No Username has been entered")
+			}
 			client, err := ucp.ReadToken()
 			if err != nil {
 				// Fatal error if can't read the torken
