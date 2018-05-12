@@ -53,6 +53,9 @@ func init() {
 	ucpRoot.AddCommand(ucpContainer)
 	ucpRoot.AddCommand(ucpCliBundle)
 	ucpRoot.AddCommand(ucpNetwork)
+	ucpRoot.AddCommand(ucpService)
+
+	// Sub commands
 	ucpContainer.AddCommand(ucpContainerTop)
 	ucpContainer.AddCommand(ucpContainerList)
 
@@ -259,6 +262,25 @@ var ucpNetwork = &cobra.Command{
 		}
 
 		err = client.GetNetworks()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+	},
+}
+
+var ucpService = &cobra.Command{
+	Use:   "service",
+	Short: "Interact with services",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+
+		err = client.GetServices()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
