@@ -75,9 +75,8 @@ func (c *Client) Connect() error {
 	return nil
 }
 
-// Disconnect -
+// Disconnect - TODO
 func (c *Client) Disconnect() error {
-
 	return nil
 }
 

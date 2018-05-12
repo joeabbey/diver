@@ -29,6 +29,26 @@ type Team struct {
 	Name        string `json:"name"`
 }
 
+// AuthStatus - will return the current logged in user
+func (c *Client) AuthStatus() (*Account, error) {
+	log.Debugln("Retrieving the current authorisation status")
+	url := fmt.Sprintf("%s/id/", c.UCPURL)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var a Account
+
+	err = json.Unmarshal(response, &a)
+	if err != nil {
+		return nil, err
+	}
+
+	return &a, nil
+}
+
 //GetClientBundle - will download the UCP Client Bundle
 func (c *Client) GetClientBundle() error {
 
@@ -40,7 +60,7 @@ func (c *Client) GetClientBundle() error {
 	}
 	defer out.Close()
 
-	log.Debugf("Retrieving Client Bundle")
+	log.Debugln("Retrieving Client Bundle")
 	url := fmt.Sprintf("%s/api/clientbundle", c.UCPURL)
 
 	response, err := c.getRequest(url, nil)
