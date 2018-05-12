@@ -52,6 +52,7 @@ func init() {
 	ucpRoot.AddCommand(ucpAuth)
 	ucpRoot.AddCommand(ucpContainer)
 	ucpRoot.AddCommand(ucpCliBundle)
+	ucpRoot.AddCommand(ucpNetwork)
 	ucpContainer.AddCommand(ucpContainerTop)
 	ucpContainer.AddCommand(ucpContainerList)
 
@@ -94,32 +95,12 @@ var ucpRoot = &cobra.Command{
 
 		log.SetLevel(log.Level(logLevel))
 		err = client.Connect()
+
+		// Check if connection was succesful
 		if err != nil {
 			log.Errorf("%v", err)
 		} else {
-			// err = client.ListNetworks()
-			// if err != nil {
-			// 	log.Errorf("%v\n", err)
-			// }
-			// err = client.ListContainerJSON()
-			// if err != nil {
-			// 	log.Errorf("%v\n", err)
-			// }
-			// err = client.GetClientBundle()
-			// if err != nil {
-			// 	log.Errorf("%v\n", err)
-			// }
-
-			// user := ucp.NewUser("dan finneran", "dan", "password", true, true, false)
-			// err = client.AddAccount(user)
-			// if err != nil {
-			// 	log.Errorf("%v\n", err)
-			// }
-			// err = client.DeleteAccount("dan1")
-			// if err != nil {
-			// 	log.Errorf("%v\n", err)
-			// }
-
+			// If succesfull write the token and annouce as succesful
 			err = client.WriteToken()
 			if err != nil {
 				log.Errorf("%v", err)
@@ -154,7 +135,6 @@ var ucpAuth = &cobra.Command{
 			log.Debugf("Started parsing [%s]", importPath)
 			err = client.ImportAccountsFromCSV(importPath)
 			if err != nil {
-				// Fatal error if can't read the token
 				log.Fatalf("%v", err)
 			}
 			return
@@ -170,7 +150,6 @@ var ucpAuth = &cobra.Command{
 			}
 			err = client.ExportAccountsToCSV(exportPath)
 			if err != nil {
-				// Fatal error if can't read the token
 				log.Fatalf("%v", err)
 			}
 			os.Exit(0)
@@ -181,7 +160,6 @@ var ucpAuth = &cobra.Command{
 			}
 			client, err := ucp.ReadToken()
 			if err != nil {
-				// Fatal error if can't read the token
 				log.Fatalf("%v", err)
 			}
 
@@ -225,7 +203,6 @@ var ucpContainerTop = &cobra.Command{
 		}
 		err = client.ContainerTop()
 		if err != nil {
-			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
 		return
@@ -244,7 +221,6 @@ var ucpContainerList = &cobra.Command{
 		}
 		err = client.GetContainerNames()
 		if err != nil {
-			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
 		return
@@ -264,9 +240,27 @@ var ucpCliBundle = &cobra.Command{
 		}
 		err = client.GetClientBundle()
 		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+	},
+}
+
+var ucpNetwork = &cobra.Command{
+	Use:   "network",
+	Short: "Interact with container networks",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
 
+		err = client.GetNetworks()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 	},
 }

@@ -3,28 +3,36 @@ package ucp
 import (
 	"encoding/json"
 	"fmt"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/docker/docker/api/types"
 )
 
-//ListNetworks -
-func (c *Client) ListNetworks() error {
-	// Add the /auth/log to the URL
+//GetNetworks -
+func (c *Client) GetNetworks() error {
+
 	url := fmt.Sprintf("%s/networks", c.UCPURL)
 
-	data := map[string]string{
-		"username": c.Username,
-		"password": c.Password,
-	}
-	b, err := json.Marshal(data)
-
+	response, err := c.getRequest(url, nil)
 	if err != nil {
 		return err
 	}
 
-	response, err := c.getRequest(url, b)
+	// We will get an array of networks from the API call
+	var networks []types.NetworkResource
+
+	log.Debugf("Parsing all networks")
+	err = json.Unmarshal(response, &networks)
 	if err != nil {
 		return err
 	}
+	log.Debugf("Found %d networks", len(networks))
 
-	fmt.Printf("%s\n", response)
+	// Loop through all networks in the array
+	for i := range networks {
+		name := networks[i].Name
+		id := networks[i].ID
+		fmt.Printf("%s \t %s\n", id, name)
+	}
 	return nil
 }
