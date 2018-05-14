@@ -92,7 +92,7 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 	if len(c.Token) != 0 {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", "application/json charset=utf-8")
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
@@ -113,6 +113,8 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 	if len(c.Token) != 0 {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
+
+	req.Header.Add("Content-Type", "application/json charset=utf-8")
 
 	bytes, err := c.doRequest(req)
 	if err != nil {

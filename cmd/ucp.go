@@ -14,23 +14,23 @@ var logLevel = 5
 var client ucp.Client
 var auth ucp.Account
 
-var importPath, exportPath, action string
+var importPath, exportPath, action, name string
 
 var top, exampleFile bool
 
 func init() {
-	diverCmd.AddCommand(ucpRoot)
+	diverCmd.AddCommand(UCPRoot)
 
-	ucpRoot.Flags().StringVar(&client.Username, "username", os.Getenv("DIVER_USERNAME"), "Username that has permissions to authenticate to Docker EE")
-	ucpRoot.Flags().StringVar(&client.Password, "password", os.Getenv("DIVER_PASSWORD"), "Password allowing a user to authenticate to Docker EE")
-	ucpRoot.Flags().StringVar(&client.UCPURL, "url", os.Getenv("DIVER_URL"), "URL for Docker EE, e.g. https://10.0.0.1")
+	UCPRoot.Flags().StringVar(&client.Username, "username", os.Getenv("DIVER_USERNAME"), "Username that has permissions to authenticate to Docker EE")
+	UCPRoot.Flags().StringVar(&client.Password, "password", os.Getenv("DIVER_PASSWORD"), "Password allowing a user to authenticate to Docker EE")
+	UCPRoot.Flags().StringVar(&client.UCPURL, "url", os.Getenv("DIVER_URL"), "URL for Docker EE, e.g. https://10.0.0.1")
 	ignoreCert := strings.ToLower(os.Getenv("DIVER_INSECURE")) == "true"
 
-	ucpRoot.Flags().BoolVar(&client.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
+	UCPRoot.Flags().BoolVar(&client.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
-	ucpRoot.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+	UCPRoot.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
-	// Auth Flags
+	// Auth flags
 	ucpAuth.Flags().StringVar(&auth.FullName, "fullname", "", "The full name of a UCP user or organisation")
 	ucpAuth.Flags().StringVar(&auth.Name, "username", "", "The unique username organisation")
 	ucpAuth.Flags().StringVar(&auth.Password, "password", "", "A string password for a new user of organisation")
@@ -49,11 +49,10 @@ func init() {
 	ucpContainer.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpContainer.Flags().BoolVar(&top, "top", false, "Enable TOP for watching running containers")
 
-	ucpRoot.AddCommand(ucpAuth)
-	ucpRoot.AddCommand(ucpContainer)
-	ucpRoot.AddCommand(ucpCliBundle)
-	ucpRoot.AddCommand(ucpNetwork)
-	ucpRoot.AddCommand(ucpService)
+	UCPRoot.AddCommand(ucpAuth)
+	UCPRoot.AddCommand(ucpContainer)
+	UCPRoot.AddCommand(ucpCliBundle)
+	UCPRoot.AddCommand(ucpNetwork)
 
 	// Sub commands
 	ucpContainer.AddCommand(ucpContainerTop)
@@ -61,7 +60,8 @@ func init() {
 
 }
 
-var ucpRoot = &cobra.Command{
+// UCPRoot - This is the root of all UCP commands / flags
+var UCPRoot = &cobra.Command{
 	Use:   "ucp",
 	Short: "Universal Control Plane ",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -262,25 +262,6 @@ var ucpNetwork = &cobra.Command{
 		}
 
 		err = client.GetNetworks()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
-	},
-}
-
-var ucpService = &cobra.Command{
-	Use:   "service",
-	Short: "Interact with services",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-
-		client, err := ucp.ReadToken()
-		if err != nil {
-			// Fatal error if can't read the token
-			log.Fatalf("%v", err)
-		}
-
-		err = client.GetServices()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
