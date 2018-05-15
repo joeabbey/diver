@@ -17,6 +17,9 @@ type BuildPlan struct {
 
 //BuildImage - This will return a list of services
 func (c *Client) BuildImage(b *BuildPlan) error {
+
+	//TODO - RM of images.
+
 	// Add the /build?remote=%s to the URL
 
 	url := fmt.Sprintf("%s/build?remote=%s", c.UCPURL, html.EscapeString(b.GHURL))
