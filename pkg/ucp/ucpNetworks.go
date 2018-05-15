@@ -36,3 +36,21 @@ func (c *Client) GetNetworks() error {
 	}
 	return nil
 }
+
+// GetNetworkFromID - this will find a container and return it's struct
+func (c *Client) GetNetworkFromID(i string) (*types.NetworkResource, error) {
+	log.Debugf("Retrieving all containers")
+	url := fmt.Sprintf("%s/networks/%s", c.UCPURL, i)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var network types.NetworkResource
+	err = json.Unmarshal(response, &network)
+	if err != nil {
+		return nil, err
+	}
+	return &network, nil
+}

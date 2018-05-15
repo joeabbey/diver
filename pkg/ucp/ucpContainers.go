@@ -45,6 +45,24 @@ func (c *Client) GetContainerCount() error {
 	return nil
 }
 
+// GetContainerFromID - this will find a container and return it's struct
+func (c *Client) GetContainerFromID(i string) (*types.ContainerJSONBase, error) {
+	log.Debugf("Retrieving all containers")
+	url := fmt.Sprintf("%s/containers/%s/json", c.UCPURL, i)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var container types.ContainerJSONBase
+	err = json.Unmarshal(response, &container)
+	if err != nil {
+		return nil, err
+	}
+	return &container, nil
+}
+
 // GetContainerNames - lists the names of all containers
 func (c *Client) GetContainerNames() error {
 	response, err := c.getAllContainers()

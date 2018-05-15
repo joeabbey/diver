@@ -78,22 +78,57 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 		return err
 	}
 
-	log.Debugf("Found %d tasks", len(tasks))
+	log.Debugf("Found %d tasks for service %s", len(tasks), q.ServiceName)
 
 	// Loop through all networks in the array
 	for i := range tasks {
-		image := tasks[i].Status.ContainerStatus.ContainerID
 
-		var networkString string
-
-		for n := range tasks[i].NetworksAttachments {
-			for a := range tasks[i].NetworksAttachments[n].Addresses {
-				networkString = networkString + "\t" + tasks[i].NetworksAttachments[n].Addresses[a]
+		// Print task ID
+		if q.ID {
+			task := tasks[i].Status.ContainerStatus.ContainerID
+			if q.Resolve {
+				resolvedTask, err := c.GetContainerFromID(task)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("%s\t", resolvedTask.Name)
+			} else {
+				fmt.Printf("%s\t", task)
 			}
-
 		}
 
-		fmt.Printf("%s \t %s\n", image, networkString)
+		// Print all networks attached to task
+		if q.Networks {
+			var networkString string
+			for n := range tasks[i].NetworksAttachments {
+				for a := range tasks[i].NetworksAttachments[n].Addresses {
+
+					address := tasks[i].NetworksAttachments[n].Addresses[a]
+					networkID := tasks[i].NetworksAttachments[n].Network.ID
+
+					// build output from query
+					if q.Resolve {
+						resolvedNetwork, err := c.GetNetworkFromID(networkID)
+						if err != nil {
+							return err
+						}
+						// Build from resolved name
+						networkString = networkString + address + "\t" + resolvedNetwork.Name + "\t"
+					} else {
+						// Build from UUID name
+						networkString = networkString + address + "\t" + networkID + "\t"
+					}
+				}
+			}
+			fmt.Printf("%s", networkString)
+		}
+
+		if q.State {
+			fmt.Printf("%s\t", tasks[i].Status.State)
+		}
+
+		// Create a newline for the next task
+		fmt.Printf("\n")
 	}
 
 	return nil
