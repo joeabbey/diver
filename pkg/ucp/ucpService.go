@@ -91,8 +91,8 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 				if err != nil {
 					// Usually we return from all errors, however we may have lost container IDs
 					parseUCPError(err.Error())
-					//log.Warn(err)
-					//log.Error("It is recommended to inspect the Docker hosts and remove this container")
+					// continue goes to the next loop
+					continue
 				} else {
 					fmt.Printf("%s\t", resolvedTask.Name)
 				}
@@ -106,8 +106,9 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 			containerNode, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
 			if err != nil {
 				// Usually we return from all errors, however we may have lost container IDs
-				log.Warn(err)
-				log.Error("It is recommended to inspect the Docker hosts and remove this container")
+				parseUCPError(err.Error())
+				// continue goes to the next loop
+				continue
 			} else {
 				fmt.Printf("%s\t", containerNode.Node.Name)
 			}
