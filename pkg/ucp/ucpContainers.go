@@ -10,6 +10,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+var containerCache []types.ContainerJSONBase
+
 // ListContainerJSON -
 func (c *Client) ListContainerJSON() error {
 	// Add the /auth/log to the URL
@@ -46,9 +48,17 @@ func (c *Client) GetContainerCount() error {
 }
 
 // GetContainerFromID - this will find a container and return it's struct
-func (c *Client) GetContainerFromID(i string) (*types.ContainerJSONBase, error) {
-	log.Debugf("Retrieving all containers")
-	url := fmt.Sprintf("%s/containers/%s/json", c.UCPURL, i)
+func (c *Client) GetContainerFromID(id string) (*types.ContainerJSONBase, error) {
+
+	// Added newline to make debugging clearer (makes a mess of normal output)
+	log.Debugf("\nLooking up Container from cache")
+
+	cachedContainer := containerIDCache(id)
+	if cachedContainer != nil {
+		return cachedContainer, nil
+	}
+
+	url := fmt.Sprintf("%s/containers/%s/json", c.UCPURL, id)
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
@@ -60,6 +70,8 @@ func (c *Client) GetContainerFromID(i string) (*types.ContainerJSONBase, error) 
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("\nAdding new container to cache for faster lookups")
+	containerCache = append(containerCache, container)
 	return &container, nil
 }
 
@@ -142,6 +154,16 @@ func (c *Client) ContainerTop() error {
 			fmt.Printf("\033[35m%0.2f%%\033[m  %s %s\n", percentage, id, name)
 		} else {
 			fmt.Printf("\033[32m%0.2f%%\033[m  %s %s\n", percentage, id, name)
+		}
+	}
+	return nil
+}
+
+// networkIDCache will cache networks from an ID lookup, reducing the amount of API calls needed
+func containerIDCache(id string) *types.ContainerJSONBase {
+	for i := range containerCache {
+		if containerCache[i].ID == id {
+			return &containerCache[i]
 		}
 	}
 	return nil
