@@ -8,6 +8,8 @@ import (
 	"github.com/docker/docker/api/types"
 )
 
+var networkCache []types.NetworkResource
+
 //GetNetworks -
 func (c *Client) GetNetworks() error {
 
@@ -38,9 +40,17 @@ func (c *Client) GetNetworks() error {
 }
 
 // GetNetworkFromID - this will find a container and return it's struct
-func (c *Client) GetNetworkFromID(i string) (*types.NetworkResource, error) {
-	log.Debugf("Retrieving all containers")
-	url := fmt.Sprintf("%s/networks/%s", c.UCPURL, i)
+func (c *Client) GetNetworkFromID(id string) (*types.NetworkResource, error) {
+	// Added newline to make debugging clearer (makes a mess of normal output)
+	log.Debugf("\nLooking up Network from cache")
+
+	// cachedNetwork := networkIDCache(id)
+	// if cachedNetwork != nil {
+	// 	return cachedNetwork, nil
+	// }
+
+	log.Debugf("Network not found in cache, using API lookup")
+	url := fmt.Sprintf("%s/networks/%s", c.UCPURL, id)
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
@@ -52,5 +62,17 @@ func (c *Client) GetNetworkFromID(i string) (*types.NetworkResource, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Add network to cache to speed further lookups
+	networkCache = append(networkCache, network)
 	return &network, nil
+}
+
+// networkIDCache will cache networks from an ID lookup, reducing the amount of API calls needed
+func networkIDCache(id string) *types.NetworkResource {
+	for i := range networkCache {
+		if networkCache[i].ID == id {
+			return &networkCache[i]
+		}
+	}
+	return nil
 }
