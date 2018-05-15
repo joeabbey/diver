@@ -21,6 +21,10 @@ func (c *Client) BuildImage(b *BuildPlan) error {
 
 	url := fmt.Sprintf("%s/build?remote=%s", c.UCPURL, html.EscapeString(b.GHURL))
 
+	if b.Tag != "" {
+		url = fmt.Sprintf("%s&t=%s", url, html.EscapeString(b.Tag))
+	}
+
 	if b.BuildHost != "" {
 		// TODO - this is a hack as html.escapestring() wont escape "{}:"
 		beginEncode := "%7B%22constraint:node%22%3A%22"
