@@ -44,10 +44,10 @@ func (c *Client) GetNetworkFromID(id string) (*types.NetworkResource, error) {
 	// Added newline to make debugging clearer (makes a mess of normal output)
 	log.Debugf("\nLooking up Network from cache")
 
-	// cachedNetwork := networkIDCache(id)
-	// if cachedNetwork != nil {
-	// 	return cachedNetwork, nil
-	// }
+	cachedNetwork := networkIDCache(id)
+	if cachedNetwork != nil {
+		return cachedNetwork, nil
+	}
 
 	log.Debugf("Network not found in cache, using API lookup")
 	url := fmt.Sprintf("%s/networks/%s", c.UCPURL, id)
