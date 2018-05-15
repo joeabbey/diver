@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -92,7 +93,7 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 	if len(c.Token) != 0 {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
-	req.Header.Add("Content-Type", "application/json charset=utf-8")
+	req.Header.Add("Content-Type", "application/json")
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
@@ -114,13 +115,58 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
 
-	req.Header.Add("Content-Type", "application/json charset=utf-8")
+	req.Header.Add("Content-Type", "application/json")
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
 		return nil, err
 	}
 	return bytes, nil
+}
+
+// GET data from the server and stream the output
+func (c *Client) getRequestStream(url string, d []byte) error {
+
+	req, err := http.NewRequest("GET", url, bytes.NewBuffer(d))
+	if err != nil {
+		return err
+	}
+
+	// Add authorisation token to HTTP header
+	if len(c.Token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	err = c.doStreamRequest(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GET data from the server and return the response as bytes
+func (c *Client) postRequestStream(url string, d []byte) error {
+	log.Debugln("Creating a new Streaming POST request")
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(d))
+	if err != nil {
+		return err
+	}
+
+	// Add authorisation token to HTTP header
+	if len(c.Token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	log.Debugln("Starting stream...")
+
+	err = c.doStreamRequest(req)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DELETE data from the server and return the response as bytes
@@ -141,6 +187,50 @@ func (c *Client) delRequest(url string, d []byte) ([]byte, error) {
 		return nil, err
 	}
 	return bytes, nil
+}
+
+func (c *Client) doStreamRequest(req *http.Request) error {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.IgnoreCert},
+	}
+	client := &http.Client{Transport: tr}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	dec := json.NewDecoder(resp.Body)
+
+	for {
+		var message struct {
+			Status string `json:"status,omitempty"`
+
+			Stream string `json:"stream,omitempty"`
+			ID     string `json:"id,omitempty"`
+		}
+
+		err := dec.Decode(&message)
+
+		if resp.StatusCode != http.StatusOK {
+			log.Fatalf("Status code is not OK: %v (%s)", resp.StatusCode, resp.Status)
+		}
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatalf("%s", err)
+		}
+		log.Debugf("%v", message)
+		if message.Status != "" {
+			log.Infof("Building on %s", message.ID)
+		}
+		if message.Stream != "\n" {
+			fmt.Printf("%s", message.Stream)
+		}
+	}
+
+	return nil
 }
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
