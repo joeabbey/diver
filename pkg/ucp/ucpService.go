@@ -17,7 +17,7 @@ type ServiceQuery struct {
 	ID       bool
 	Networks bool
 	State    bool
-
+	Node     bool
 	// Resolve UUIDs to Name
 	Resolve bool
 }
@@ -89,11 +89,28 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 			if q.Resolve {
 				resolvedTask, err := c.GetContainerFromID(task)
 				if err != nil {
-					return err
+					// Usually we return from all errors, however we may have lost container IDs
+					parseUCPError(err.Error())
+					// continue goes to the next loop
+					continue
+				} else {
+					fmt.Printf("%s\t", resolvedTask.Name)
 				}
-				fmt.Printf("%s\t", resolvedTask.Name)
 			} else {
 				fmt.Printf("%s\t", task)
+			}
+		}
+
+		// Above query will have cached the results if the container was found
+		if q.Node {
+			containerNode, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
+			if err != nil {
+				// Usually we return from all errors, however we may have lost container IDs
+				parseUCPError(err.Error())
+				// continue goes to the next loop
+				continue
+			} else {
+				fmt.Printf("%s\t", containerNode.Node.Name)
 			}
 		}
 

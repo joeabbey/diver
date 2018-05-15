@@ -14,7 +14,7 @@ var logLevel = 5
 var client ucp.Client
 var auth ucp.Account
 
-var importPath, exportPath, action, name string
+var importPath, exportPath, action string
 
 var top, exampleFile bool
 
