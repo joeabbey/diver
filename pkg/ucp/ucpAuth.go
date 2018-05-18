@@ -117,8 +117,16 @@ func NewOrg(fullname, username, password string, isActive, isAdmin, searchLDAP b
 
 //AddAccount - adds a new account to UCP
 func (c *Client) AddAccount(account *Account) error {
-	log.Infof("Creating account for user [%s]", account.FullName)
+	if account.IsOrg {
+		log.Infof("Creating account for Organisation [%s]", account.Name)
+	} else {
+		if account.FullName != "" {
+			log.Infof("Creating account for user [%s]", account.FullName)
 
+		} else {
+			log.Infof("Creating account for user [%s]", account.Name)
+		}
+	}
 	url := fmt.Sprintf("%s/accounts", c.UCPURL)
 
 	b, err := json.Marshal(account)

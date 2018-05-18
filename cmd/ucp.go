@@ -12,7 +12,6 @@ import (
 
 var logLevel = 5
 var client ucp.Client
-var auth ucp.Account
 
 var importPath, exportPath, action string
 
@@ -30,26 +29,10 @@ func init() {
 
 	UCPRoot.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
-	// Auth flags
-	ucpAuth.Flags().StringVar(&auth.FullName, "fullname", "", "The full name of a UCP user or organisation")
-	ucpAuth.Flags().StringVar(&auth.Name, "username", "", "The unique username organisation")
-	ucpAuth.Flags().StringVar(&auth.Password, "password", "", "A string password for a new user of organisation")
-	ucpAuth.Flags().BoolVar(&auth.IsAdmin, "admin", false, "Make this user an administrator")
-	ucpAuth.Flags().BoolVar(&auth.IsActive, "active", true, "Enable this user in the Universal Control Plane")
-	ucpAuth.Flags().BoolVar(&auth.IsOrg, "isorg", false, "Create an Organisation")
-	ucpAuth.Flags().StringVar(&importPath, "importCSV", "", "Import accounts from a file [csv currently supported]")
-	ucpAuth.Flags().StringVar(&exportPath, "exportCSV", "", "Export users to a file [csv currently supported]")
-
-	ucpAuth.Flags().BoolVar(&exampleFile, "exampleCSV", false, "Create an example csv file [example_accounts.csv]")
-
-	ucpAuth.Flags().StringVar(&action, "action", "create", "Action to be performed [create/delete/update]")
-	ucpAuth.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
 	// Container flags
 	ucpContainer.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpContainer.Flags().BoolVar(&top, "top", false, "Enable TOP for watching running containers")
 
-	UCPRoot.AddCommand(ucpAuth)
 	UCPRoot.AddCommand(ucpContainer)
 	UCPRoot.AddCommand(ucpCliBundle)
 	UCPRoot.AddCommand(ucpNetwork)
@@ -76,7 +59,7 @@ var UCPRoot = &cobra.Command{
 			if err != nil {
 				log.Errorf("%v", err)
 			} else {
-
+				cmd.Help()
 				log.Infof("Current user [%s]", currentAccount.Name)
 				return
 			}
@@ -109,79 +92,6 @@ var UCPRoot = &cobra.Command{
 				log.Errorf("%v", err)
 			}
 			log.Infof("Succesfully logged into [%s]", client.UCPURL)
-		}
-	},
-}
-
-var ucpAuth = &cobra.Command{
-	Use:   "auth",
-	Short: "Authorisation commands for users, groups and teams",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-		if exampleFile == true {
-			log.Infof("Creating example CSV file for UCP accounts [example_accounts.csv]")
-			err := ucp.CreateExampleAccountCSV()
-			if err != nil {
-				// Fatal error if can't read the token
-				log.Fatalf("%v", err)
-			}
-			return
-		}
-		// A file has been passed in, so parse it and return
-		if importPath != "" {
-			log.Info("Importing Accounts from file")
-			client, err := ucp.ReadToken()
-			if err != nil {
-				// Fatal error if can't read the token
-				log.Fatalf("%v", err)
-			}
-			log.Debugf("Started parsing [%s]", importPath)
-			err = client.ImportAccountsFromCSV(importPath)
-			if err != nil {
-				log.Fatalf("%v", err)
-			}
-			return
-		}
-
-		// Export all users to a csv file at exportPath
-		if exportPath != "" {
-			log.Infof("Exporting Accounts to file [%s]", exportPath)
-			client, err := ucp.ReadToken()
-			if err != nil {
-				// Fatal error if can't read the token
-				log.Fatalf("%v", err)
-			}
-			err = client.ExportAccountsToCSV(exportPath)
-			if err != nil {
-				log.Fatalf("%v", err)
-			}
-			os.Exit(0)
-		} else {
-			// Parse flags/variables
-			if auth.Name == "" {
-				log.Fatalf("No Username has been entered")
-			}
-			client, err := ucp.ReadToken()
-			if err != nil {
-				log.Fatalf("%v", err)
-			}
-
-			switch action {
-			case "create":
-				err = client.AddAccount(&auth)
-			case "delete":
-				err = client.DeleteAccount(auth.Name)
-			case "update":
-				log.Errorf("Not supported (yet)")
-			default:
-				log.Errorf("Unknown action [%s]", action)
-				cmd.Help()
-			}
-
-			if err != nil {
-				// Fatal error if can't read the token
-				log.Fatalf("%v", err)
-			}
 		}
 	},
 }
@@ -232,7 +142,7 @@ var ucpContainerList = &cobra.Command{
 
 var ucpCliBundle = &cobra.Command{
 	Use:   "client-bundle",
-	Short: "download the client bundle for UCP",
+	Short: "Download the client bundle for UCP",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 
