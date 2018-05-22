@@ -23,6 +23,11 @@ type Account struct {
 	SearchLDAP bool   `json:"searchLDAP"`
 }
 
+// AccountList - The format returned by a query of accounts
+type AccountList struct {
+	Accounts []Account `json:"accounts"`
+}
+
 // Team - is the structure for defining a team
 type Team struct {
 	Description string `json:"description"`
@@ -36,7 +41,8 @@ func (c *Client) AuthStatus() (*Account, error) {
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return nil, err
+
+		return nil, fmt.Errorf("Unable to authenticate with existing token")
 	}
 
 	var a Account
@@ -117,8 +123,16 @@ func NewOrg(fullname, username, password string, isActive, isAdmin, searchLDAP b
 
 //AddAccount - adds a new account to UCP
 func (c *Client) AddAccount(account *Account) error {
-	log.Infof("Creating account for user [%s]", account.FullName)
+	if account.IsOrg {
+		log.Infof("Creating account for Organisation [%s]", account.Name)
+	} else {
+		if account.FullName != "" {
+			log.Infof("Creating account for user [%s]", account.FullName)
 
+		} else {
+			log.Infof("Creating account for user [%s]", account.Name)
+		}
+	}
 	url := fmt.Sprintf("%s/accounts", c.UCPURL)
 
 	b, err := json.Marshal(account)
@@ -129,7 +143,7 @@ func (c *Client) AddAccount(account *Account) error {
 	}
 	response, err := c.postRequest(url, b)
 	if err != nil {
-		err = parseUCPError(err.Error())
+		err = ParseUCPError([]byte(err.Error()))
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
@@ -149,7 +163,7 @@ func (c *Client) DeleteAccount(account string) error {
 
 	_, err := c.delRequest(url, nil)
 	if err != nil {
-		err = parseUCPError(err.Error())
+		//err = parseUCPError(err.Error())
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
@@ -172,7 +186,7 @@ func (c *Client) AddTeamToOrganisation(team *Team, org string) error {
 	}
 	response, err := c.postRequest(url, b)
 	if err != nil {
-		err = parseUCPError(err.Error())
+		err = ParseUCPError([]byte(err.Error()))
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
@@ -192,7 +206,7 @@ func (c *Client) DeleteTeamFromOrganisation(team, org string) error {
 
 	_, err := c.delRequest(url, nil)
 	if err != nil {
-		err = parseUCPError(err.Error())
+		err = ParseUCPError([]byte(err.Error()))
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
@@ -309,11 +323,9 @@ func (c *Client) ExportAccountsToCSV(path string) error {
 		return err
 	}
 
-	var accountList struct {
-		Accounts []Account `json:"accounts"`
-	}
+	var a AccountList
 
-	err = json.Unmarshal(response, &accountList)
+	err = json.Unmarshal(response, &a)
 	if err != nil {
 		return err
 	}
@@ -327,7 +339,7 @@ func (c *Client) ExportAccountsToCSV(path string) error {
 	writer := csv.NewWriter(csvFile)
 	defer writer.Flush()
 
-	for _, acct := range accountList.Accounts {
+	for _, acct := range a.Accounts {
 		var csvString = []string{acct.FullName,
 			strconv.FormatBool(acct.IsActive),
 			strconv.FormatBool(acct.IsAdmin),
@@ -375,4 +387,47 @@ func CreateExampleAccountCSV() error {
 		strconv.FormatBool(acct.SearchLDAP)}
 
 	return writer.Write(csvString)
+}
+
+// GetAccounts - This will get all accounts
+func (c *Client) GetAccounts(query Account, count int) (*AccountList, error) {
+
+	log.Infof("Retrieving Accounts from UCP")
+	// Build the URL (TODO set limit)
+	var url string
+	if count > 0 {
+		url = fmt.Sprintf("%s/accounts/?limit=%d", c.UCPURL, count)
+	} else {
+		// DEFAULT to 1000 records
+		url = fmt.Sprintf("%s/accounts/?limit=1000", c.UCPURL)
+	}
+	if query.IsOrg == true {
+		log.Debugln("Retrieving Organisations")
+		url = url + "&filter=orgs"
+	}
+
+	if query.IsAdmin == true {
+		log.Debugln("Retrieving Organisations")
+		url = url + "&filter=admins"
+	}
+
+	if query.IsActive == false {
+		log.Debugln("Retrieving Organisations")
+		url = url + "&filter=inactive"
+	}
+
+	log.Debugf("Built URL [%s]", url)
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving Accounts")
+	}
+
+	var a AccountList
+
+	err = json.Unmarshal(response, &a)
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+
 }
