@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/thebsdbox/diver/pkg/ucp"
 )
 
 var auth ucp.Account
+
+var admin, inactive bool
 
 func init() {
 	// Auth flags
@@ -17,26 +21,38 @@ func init() {
 
 	// User/Org Create flags
 	ucpAuthOrgCreate.Flags().StringVar(&auth.Name, "name", "", "A unique Organisation name")
+	ucpAuthOrgCreate.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	ucpAuthUsersCreate.Flags().StringVar(&auth.FullName, "fullname", "", "The full name of a UCP user or organisation")
 	ucpAuthUsersCreate.Flags().StringVar(&auth.Name, "name", "", "The unique username")
 	ucpAuthUsersCreate.Flags().StringVar(&auth.Password, "password", "", "A string password for a new user of organisation")
 	ucpAuthUsersCreate.Flags().BoolVar(&auth.IsAdmin, "admin", false, "Make this user an administrator")
 	ucpAuthUsersCreate.Flags().BoolVar(&auth.IsActive, "active", true, "Enable this user in the Universal Control Plane")
+	ucpAuthUsersCreate.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	// User/Org Delete flags
 	ucpAuthOrgDelete.Flags().StringVar(&auth.Name, "name", "", "Existing Organisation")
+	ucpAuthOrgDelete.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+
 	ucpAuthUsersDelete.Flags().StringVar(&auth.Name, "name", "", "Existing username")
+	ucpAuthUsersDelete.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+
+	ucpAuthOrgList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+	ucpAuthUsersList.Flags().BoolVar(&admin, "admin", false, "Retrieve *only* Administrative users")
+	ucpAuthUsersList.Flags().BoolVar(&inactive, "inactive", false, "Retrieve *only* inactive users")
+	ucpAuthUsersList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	ucpAuth.AddCommand(ucpAuthOrg)
 	ucpAuthOrg.AddCommand(ucpAuthOrgCreate)
 	ucpAuthOrg.AddCommand(ucpAuthOrgDelete)
+	ucpAuthOrg.AddCommand(ucpAuthOrgList)
 
 	ucpAuth.AddCommand(ucpAuthTeams)
 
 	ucpAuth.AddCommand(ucpAuthUsers)
 	ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
 	ucpAuthUsers.AddCommand(ucpAuthOrgDelete)
+	ucpAuthUsers.AddCommand(ucpAuthUsersList)
 
 	UCPRoot.AddCommand(ucpAuth)
 
@@ -142,6 +158,42 @@ var ucpAuthOrgDelete = &cobra.Command{
 	},
 }
 
+var ucpAuthOrgList = &cobra.Command{
+	Use:   "list",
+	Short: "List all organisations in Docker EE",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		//orgs, err := client.GetAllOrgs()
+		var accountQuery ucp.Account
+		accountQuery.IsOrg = false
+
+		orgs, err := client.GetAccounts(accountQuery, 1000)
+
+		if err != nil {
+			err = ucp.ParseUCPError([]byte(err.Error()))
+			if err != nil {
+				log.Errorf("Error parsing UCP error: %v", err)
+			}
+			log.Fatalf("%v", err)
+		}
+
+		if len(orgs.Accounts) == 0 {
+			log.Error("No accounts returned")
+			return
+		}
+		log.Debugf("Found %d Accounts", len(orgs.Accounts))
+		fmt.Printf("Org Name\tFullname\n")
+		for _, acct := range orgs.Accounts {
+			fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+		}
+	},
+}
+
 var ucpAuthTeams = &cobra.Command{
 	Use:   "teams",
 	Short: "Manage Docker EE Teams",
@@ -198,5 +250,45 @@ var ucpAuthUsersDelete = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
+	},
+}
+
+var ucpAuthUsersList = &cobra.Command{
+	Use:   "list",
+	Short: "List all users in Docker EE",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		var users *ucp.AccountList
+		var accountQuery ucp.Account
+		accountQuery.IsOrg = false
+		if admin {
+			accountQuery.IsAdmin = true
+		}
+		if inactive {
+			accountQuery.IsActive = false
+		}
+		users, err = client.GetAccounts(accountQuery, 1000)
+		if err != nil {
+			err = ucp.ParseUCPError([]byte(err.Error()))
+			if err != nil {
+				log.Errorf("Error parsing UCP error: %v", err)
+			}
+			log.Fatalf("%v", err)
+		}
+
+		if len(users.Accounts) == 0 {
+			log.Error("No accounts returned")
+			return
+		}
+		log.Debugf("Found %d Accounts", len(users.Accounts))
+		fmt.Printf("Org Name\tFullname\n")
+		for _, acct := range users.Accounts {
+			fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+		}
+
 	},
 }

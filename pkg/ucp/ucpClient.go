@@ -35,15 +35,15 @@ func NewBasicAuthClient(username, password, url string, ignoreCert bool) *Client
 // Connect - Will attempt to connect to UCP
 func (c *Client) Connect() error {
 	if c.Username == "" {
-		return fmt.Errorf("Username hasn't been entered")
+		return fmt.Errorf("UCP Username hasn't been entered")
 	}
 
 	if c.Password == "" {
-		return fmt.Errorf("Password is blank")
+		return fmt.Errorf("UCP Password is blank")
 	}
 
 	if c.UCPURL == "" {
-		return fmt.Errorf("URL hasn't been entered")
+		return fmt.Errorf("UCP URL hasn't been entered")
 	}
 	// Add the /auth/log to the URL
 	url := fmt.Sprintf("%s/auth/login", c.UCPURL)
@@ -251,17 +251,16 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	switch resp.StatusCode {
 	case 200:
 		log.Debug("[success] HTTP Status code 200")
-		return body, nil
 	case 201:
 		log.Debug("[success] HTTP Status code 201")
-		return body, nil
 	case 204:
 		log.Debug("[success] HTTP Status code 204")
-		return body, nil
+	case 401:
+		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
+		// Return Body, can be processed with ucp.ParseURL elsewhere
+		return nil, fmt.Errorf("%s", body)
 	}
-
-	log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
-	return nil, fmt.Errorf("%s", body)
+	return body, nil
 }
 
 type internal struct {
@@ -279,7 +278,7 @@ func (c *Client) WriteToken() error {
 
 	// build path
 	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
-	log.Debugln("Writing Token to [%s]", path)
+	log.Debugf("Writing Token to [%s]", path)
 
 	clientToken := internal{
 		UCPAddress: c.UCPURL,

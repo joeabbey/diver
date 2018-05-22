@@ -90,7 +90,7 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 				resolvedTask, err := c.GetContainerFromID(task)
 				if err != nil {
 					// Usually we return from all errors, however we may have lost container IDs
-					parseUCPError(err.Error())
+					//parseUCPError(err.Error())
 					// continue goes to the next loop
 					continue
 				} else {
@@ -106,7 +106,7 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 			containerNode, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
 			if err != nil {
 				// Usually we return from all errors, however we may have lost container IDs
-				parseUCPError(err.Error())
+				//parseUCPError(err.Error())
 				// continue goes to the next loop
 				continue
 			} else {

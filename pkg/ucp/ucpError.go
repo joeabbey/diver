@@ -17,13 +17,12 @@ type errorEntry struct {
 }
 
 // ParseUCPError - This will read through the return from UCP and report the error
-func parseUCPError(response string) error {
-	log.Debugf("%v", response)
+func ParseUCPError(response []byte) error {
 	e := errorResponse{}
 	r := errorEntry{}
 	// TODO
 	// Assuming that all main UCP calls will respond using the above JSON structure (could fail silently if that isn't the case)
-	err := json.Unmarshal([]byte(response), &e)
+	err := json.Unmarshal(response, &e)
 	if err != nil {
 		return err
 	}
