@@ -365,28 +365,35 @@ func CreateExampleAccountCSV() error {
 	writer := csv.NewWriter(csvFile)
 	defer writer.Flush()
 
+	action := "create"
+
 	acct := Account{
-		FullName:   "John Candy",
+		FullName:   "John Doe",
 		IsActive:   true,
 		IsAdmin:    true,
 		IsOrg:      false,
-		Name:       "jcandy",
-		Password:   "Gr3At0utd00r5",
+		Name:       "jdoe",
+		Password:   "lockedDown",
 		SearchLDAP: false,
 	}
 
-	action := "create"
-
-	var csvString = []string{action,
-		acct.FullName,
-		strconv.FormatBool(acct.IsActive),
-		strconv.FormatBool(acct.IsAdmin),
-		strconv.FormatBool(acct.IsOrg),
-		acct.Name,
-		acct.Password,
-		strconv.FormatBool(acct.SearchLDAP)}
-
-	return writer.Write(csvString)
+	for i := 1; i <= 100; i++ {
+		var csvString = []string{
+			action,
+			fmt.Sprintf("%s%d", acct.FullName, i),
+			strconv.FormatBool(acct.IsActive),
+			strconv.FormatBool(acct.IsAdmin),
+			strconv.FormatBool(acct.IsOrg),
+			fmt.Sprintf("%s%d", acct.Name, i),
+			acct.Password,
+			strconv.FormatBool(acct.SearchLDAP),
+		}
+		err = writer.Write(csvString)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // GetAccounts - This will get all accounts
