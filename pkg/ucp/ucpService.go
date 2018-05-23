@@ -22,8 +22,27 @@ type ServiceQuery struct {
 	Resolve bool
 }
 
-//GetServices - This will return a list of services
-func (c *Client) GetServices() error {
+//GetService - This will return a list of services
+func (c *Client) GetService(service string) (*swarm.Service, error) {
+
+	url := fmt.Sprintf("%s/services/%s", c.UCPURL, service)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debugf("Parsing all services")
+	var svc swarm.Service
+	err = json.Unmarshal(response, &svc)
+	if err != nil {
+		return nil, err
+	}
+	return &svc, nil
+}
+
+//GetAllServices - This will return a list of services
+func (c *Client) GetAllServices() error {
 
 	url := fmt.Sprintf("%s/services", c.UCPURL)
 
@@ -90,7 +109,7 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 				resolvedTask, err := c.GetContainerFromID(task)
 				if err != nil {
 					// Usually we return from all errors, however we may have lost container IDs
-					//parseUCPError(err.Error())
+					ParseUCPError([]byte(err.Error()))
 					// continue goes to the next loop
 					continue
 				} else {
@@ -106,7 +125,7 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 			containerNode, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
 			if err != nil {
 				// Usually we return from all errors, however we may have lost container IDs
-				//parseUCPError(err.Error())
+				ParseUCPError([]byte(err.Error()))
 				// continue goes to the next loop
 				continue
 			} else {
