@@ -215,6 +215,27 @@ func (c *Client) DeleteTeamFromOrganisation(team, org string) error {
 	return nil
 }
 
+//AddUserToTeam - adds a team to an existing organisation
+func (c *Client) AddUserToTeam(user, org, team string) error {
+	log.Infof("Adding user [%s] to team [%s] in organisation [%s]", user, team, org)
+
+	url := fmt.Sprintf("%s/accounts/%s/teams/%s/members/%s", c.UCPURL, org, team, user)
+
+	// TODO - user can be an admin, but does he need to be a team admin (not sure what it does)
+	response, err := c.putRequest(url, []byte(`{}`))
+	if err != nil {
+		err = ParseUCPError([]byte(err.Error()))
+		if err != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
+		return err
+	}
+
+	log.Debugf("%v", string(response))
+
+	return nil
+}
+
 //ImportAccountsFromCSV -
 func (c *Client) ImportAccountsFromCSV(path string) error {
 	csvFile, err := os.Open(path)
