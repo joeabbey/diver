@@ -48,6 +48,10 @@ func init() {
 	ucpAuthOrg.AddCommand(ucpAuthOrgList)
 
 	ucpAuth.AddCommand(ucpAuthTeams)
+	// TODO - Team commands
+
+	ucpAuth.AddCommand(ucpAuthRoles)
+	ucpAuthRoles.AddCommand(ucpAuthRolesList)
 
 	ucpAuth.AddCommand(ucpAuthUsers)
 	ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
@@ -194,14 +198,6 @@ var ucpAuthOrgList = &cobra.Command{
 	},
 }
 
-var ucpAuthTeams = &cobra.Command{
-	Use:   "teams",
-	Short: "Manage Docker EE Teams",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-	},
-}
-
 var ucpAuthUsers = &cobra.Command{
 	Use:   "users",
 	Short: "Manage Docker EE Users",
@@ -290,5 +286,37 @@ var ucpAuthUsersList = &cobra.Command{
 			fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
 		}
 
+	},
+}
+
+var ucpAuthTeams = &cobra.Command{
+	Use:   "teams",
+	Short: "Manage Docker EE Teams",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+	},
+}
+
+var ucpAuthRoles = &cobra.Command{
+	Use:   "roles",
+	Short: "Manage Docker EE Roles",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+	},
+}
+
+var ucpAuthRolesList = &cobra.Command{
+	Use:   "list",
+	Short: "List Docker EE Roles",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		err = client.GetRoles()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 	},
 }
