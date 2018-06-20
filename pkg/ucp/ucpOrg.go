@@ -7,6 +7,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+type roles struct {
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	ServiceRole bool            `json:"servicerole"`
+	Operations  json.RawMessage // Captures the raw output of the remaining json object
+}
+
 //GetOrg - TODO
 func (c *Client) GetOrg(orgName string) error {
 	log.Debugf("Searching for Org [%s]", orgName)
@@ -23,24 +30,18 @@ func (c *Client) GetRoles() error {
 		return err
 	}
 
-	var roles []struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		ServiceRole bool   `json:"servicerole"`
-		//Operations  interface{} `json:"operations,omitempty"`
-		Operations json.RawMessage // Captures the raw output of the remaining json object
-	}
+	var r []roles
 
 	log.Debugf("Parsing all roles")
-	err = json.Unmarshal(response, &roles)
+	err = json.Unmarshal(response, &r)
 	if err != nil {
 		return err
 	}
 
 	fmt.Printf("ID\t\tService Account\tName\n")
 
-	for i := range roles {
-		fmt.Printf("%s\t%t\t%s\n", roles[i].ID, roles[i].ServiceRole, roles[i].Name)
+	for i := range r {
+		fmt.Printf("%s\t%t\t%s\n", r[i].ID, r[i].ServiceRole, r[i].Name)
 	}
 	return nil
 }
@@ -55,23 +56,17 @@ func (c *Client) GetRole(role string) (string, error) {
 		return "", err
 	}
 
-	var roles []struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		ServiceRole bool   `json:"servicerole"`
-		//Operations  interface{} `json:"operations,omitempty"`
-		Operations json.RawMessage // Captures the raw output of the remaining json object
-	}
+	var r []roles
 
 	log.Debugf("Parsing all roles")
-	err = json.Unmarshal(response, &roles)
+	err = json.Unmarshal(response, &r)
 	if err != nil {
 		return "", err
 	}
 
-	for i := range roles {
-		if role == roles[i].Name {
-			return string(roles[i].Operations), nil
+	for i := range r {
+		if role == r[i].Name {
+			return string(r[i].Operations), nil
 		}
 
 	}
@@ -79,32 +74,29 @@ func (c *Client) GetRole(role string) (string, error) {
 }
 
 //SetRole - This set the role of a user in an organisation
-func (c *Client) SetRole(user, org, role string) error {
+func (c *Client) SetRole(name, id, ruleset string, serviceAccount bool) error {
 
 	url := fmt.Sprintf("%s/roles", c.UCPURL)
 
-	response, err := c.getRequest(url, nil)
-	if err != nil {
-		return nil
+	newrole := roles{
+		ID:          id,
+		Name:        name,
+		ServiceRole: serviceAccount,
+		Operations:  json.RawMessage(ruleset),
 	}
 
-	var roles []struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		ServiceRole bool   `json:"servicerole"`
-	}
+	b, err := json.Marshal(newrole)
 
-	log.Debugf("Parsing all roles")
-	err = json.Unmarshal(response, &roles)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Name\t\tID\t\tService Account\n")
-
-	for i := range roles {
-		fmt.Printf("%s\t%s\t%t\n", roles[i].Name, roles[i].ID, roles[i].ServiceRole)
+	response, err := c.postRequest(url, b)
+	if err != nil {
+		return nil
 	}
+
+	log.Debugf("%v", string(response))
 
 	return nil
 }
