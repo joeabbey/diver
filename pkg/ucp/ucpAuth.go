@@ -236,7 +236,7 @@ func (c *Client) AddUserToTeam(user, org, team string) error {
 	return nil
 }
 
-// AddUserToOrganisation - Adds a user to an existing organisation
+// AddUserToOrganisation - Adds a user to an existing organisation TODO
 func (c *Client) AddUserToOrganisation(user, org string) error {
 	return nil
 }

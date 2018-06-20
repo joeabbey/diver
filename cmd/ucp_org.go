@@ -9,7 +9,7 @@ import (
 )
 
 var auth ucp.Account
-
+var name string
 var admin, inactive bool
 
 func init() {
@@ -42,6 +42,8 @@ func init() {
 	ucpAuthUsersList.Flags().BoolVar(&inactive, "inactive", false, "Retrieve *only* inactive users")
 	ucpAuthUsersList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
+	ucpAuthRolesGet.Flags().StringVar(&name, "rolename", "", "Name of the role retrieve")
+
 	ucpAuth.AddCommand(ucpAuthOrg)
 	ucpAuthOrg.AddCommand(ucpAuthOrgCreate)
 	ucpAuthOrg.AddCommand(ucpAuthOrgDelete)
@@ -52,6 +54,7 @@ func init() {
 
 	ucpAuth.AddCommand(ucpAuthRoles)
 	ucpAuthRoles.AddCommand(ucpAuthRolesList)
+	ucpAuthRoles.AddCommand(ucpAuthRolesGet)
 
 	ucpAuth.AddCommand(ucpAuthUsers)
 	ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
@@ -305,6 +308,7 @@ var ucpAuthRoles = &cobra.Command{
 	Short: "Manage Docker EE Roles",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
+		cmd.Help()
 	},
 }
 
@@ -321,5 +325,26 @@ var ucpAuthRolesList = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+	},
+}
+
+var ucpAuthRolesGet = &cobra.Command{
+	Use:   "get",
+	Short: "List all rules for a particular role",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No role specified to download")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		rules, err := client.GetRole(name)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		fmt.Printf("%s", rules)
 	},
 }

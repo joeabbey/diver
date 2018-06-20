@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -63,6 +64,8 @@ var UCPRoot = &cobra.Command{
 			log.Warn("Session has expired, please login")
 			return
 		}
+		cmd.Help()
+		fmt.Printf("\n\n")
 		log.Infof("Current user [%s]", currentAccount.Name)
 		return
 	},
