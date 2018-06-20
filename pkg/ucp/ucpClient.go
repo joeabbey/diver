@@ -146,7 +146,7 @@ func (c *Client) getRequestStream(url string, d []byte) error {
 	return nil
 }
 
-// GET data from the server and return the response as bytes
+// postRequestStream, this will stream the output of a post request
 func (c *Client) postRequestStream(url string, d []byte) error {
 	log.Debugln("Creating a new Streaming POST request")
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(d))

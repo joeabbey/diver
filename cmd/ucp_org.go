@@ -9,7 +9,7 @@ import (
 )
 
 var auth ucp.Account
-
+var name string
 var admin, inactive bool
 
 func init() {
@@ -42,6 +42,8 @@ func init() {
 	ucpAuthUsersList.Flags().BoolVar(&inactive, "inactive", false, "Retrieve *only* inactive users")
 	ucpAuthUsersList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
+	ucpAuthRolesGet.Flags().StringVar(&name, "rolename", "", "Name of the role retrieve")
+
 	ucpAuth.AddCommand(ucpAuthOrg)
 	ucpAuthOrg.AddCommand(ucpAuthOrgCreate)
 	ucpAuthOrg.AddCommand(ucpAuthOrgDelete)
@@ -52,6 +54,7 @@ func init() {
 
 	ucpAuth.AddCommand(ucpAuthRoles)
 	ucpAuthRoles.AddCommand(ucpAuthRolesList)
+	ucpAuthRoles.AddCommand(ucpAuthRolesGet)
 
 	ucpAuth.AddCommand(ucpAuthUsers)
 	ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
@@ -174,7 +177,7 @@ var ucpAuthOrgList = &cobra.Command{
 
 		//orgs, err := client.GetAllOrgs()
 		var accountQuery ucp.Account
-		accountQuery.IsOrg = false
+		accountQuery.IsOrg = true
 
 		orgs, err := client.GetAccounts(accountQuery, 1000)
 
@@ -281,9 +284,12 @@ var ucpAuthUsersList = &cobra.Command{
 			return
 		}
 		log.Debugf("Found %d Accounts", len(users.Accounts))
-		fmt.Printf("Org Name\tFullname\n")
+		fmt.Printf("User Name\tFullname\n")
 		for _, acct := range users.Accounts {
-			fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+			// Not sure why we're still retrieving ORGs even though we said false above - TODO
+			if !acct.IsOrg {
+				fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+			}
 		}
 
 	},
@@ -302,6 +308,7 @@ var ucpAuthRoles = &cobra.Command{
 	Short: "Manage Docker EE Roles",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
+		cmd.Help()
 	},
 }
 
@@ -318,5 +325,26 @@ var ucpAuthRolesList = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+	},
+}
+
+var ucpAuthRolesGet = &cobra.Command{
+	Use:   "get",
+	Short: "List all rules for a particular role",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No role specified to download")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		rules, err := client.GetRole(name)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		fmt.Printf("%s", rules)
 	},
 }

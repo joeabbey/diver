@@ -236,7 +236,12 @@ func (c *Client) AddUserToTeam(user, org, team string) error {
 	return nil
 }
 
-//ImportAccountsFromCSV -
+// AddUserToOrganisation - Adds a user to an existing organisation TODO
+func (c *Client) AddUserToOrganisation(user, org string) error {
+	return nil
+}
+
+//ImportAccountsFromCSV - This will import accounts from a CSV file and create/delete them as described in the CSV
 func (c *Client) ImportAccountsFromCSV(path string) error {
 	csvFile, err := os.Open(path)
 	if err != nil {
