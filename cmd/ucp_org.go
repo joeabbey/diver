@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 )
 
 var auth ucp.Account
-var name string
+var name, rulesetfile string
 var admin, inactive bool
 
 func init() {
@@ -43,24 +44,32 @@ func init() {
 	ucpAuthUsersList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	ucpAuthRolesGet.Flags().StringVar(&name, "rolename", "", "Name of the role retrieve")
+	ucpAuthRolesCreate.Flags().StringVar(&name, "rolename", "", "Name of the role to create")
+	ucpAuthRolesCreate.Flags().StringVar(&rulesetfile, "ruleset", "", "Path to a ruleset (JSON) to be used")
+	ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a service account")
 
+	// UCP ORG
 	ucpAuth.AddCommand(ucpAuthOrg)
 	ucpAuthOrg.AddCommand(ucpAuthOrgCreate)
 	ucpAuthOrg.AddCommand(ucpAuthOrgDelete)
 	ucpAuthOrg.AddCommand(ucpAuthOrgList)
 
+	// TODO - UCP TEAMS
 	ucpAuth.AddCommand(ucpAuthTeams)
-	// TODO - Team commands
 
+	// UCP ROLES
 	ucpAuth.AddCommand(ucpAuthRoles)
 	ucpAuthRoles.AddCommand(ucpAuthRolesList)
 	ucpAuthRoles.AddCommand(ucpAuthRolesGet)
+	ucpAuthRoles.AddCommand(ucpAuthRolesCreate)
 
+	// UCP USERS
 	ucpAuth.AddCommand(ucpAuthUsers)
 	ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
 	ucpAuthUsers.AddCommand(ucpAuthOrgDelete)
 	ucpAuthUsers.AddCommand(ucpAuthUsersList)
 
+	//UCP ROOT
 	UCPRoot.AddCommand(ucpAuth)
 
 }
@@ -348,3 +357,35 @@ var ucpAuthRolesGet = &cobra.Command{
 		fmt.Printf("%s", rules)
 	},
 }
+
+var ucpAuthRolesCreate = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new role based upon a ruleset",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No role specified to download")
+		}
+
+		rulefile, err := ioutil.ReadFile(rulesetfile)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		err = client.CreateRole(name, name, string(rulefile), admin)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Role [%s] created succesfully", name)
+	},
+}
+
+// ucpAuthRolesCreate.Flags().StringVar(&name, "rolename", "", "Name of the role to create")
+// ucpAuthRolesCreate.Flags().StringVar(&rulesetfile, "ruleset", "", "Path to a ruleset (JSON) to be used")
+// ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a service account")

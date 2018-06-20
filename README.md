@@ -53,6 +53,21 @@ This will create a new **user** called `bob`, to create an organisation use the 
                  --action create
 ```
 
+***Working with Roles***
+
+Once logged in you can list/get and create roles as per the example below:
+
+```
+dan $ ./diver ucp auth roles list | grep jenkins
+998612c1-b367-42af-9d82-b2a5de9f8851    false   jenkins
+dan $ ./diver ucp auth roles get --rolename jenkins > jenkins.role
+dan $ ./diver ucp auth roles create --rolename jenkins2 --ruleset ./jenkins.role
+INFO[0000] Role [jenkins2] created succesfully
+dan $ ./diver ucp auth roles list | grep jenkins
+260976b1-76d7-4ef0-84e2-6ae6b896eed1    false   jenkins2
+998612c1-b367-42af-9d82-b2a5de9f8851    false   jenkins
+```
+
 **Downloading the client bundle**
 
 Download the client bundle to your local machine.

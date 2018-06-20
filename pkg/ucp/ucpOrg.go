@@ -73,8 +73,8 @@ func (c *Client) GetRole(role string) (string, error) {
 	return "", fmt.Errorf("Unable to find role [%s]", role)
 }
 
-//SetRole - This set the role of a user in an organisation
-func (c *Client) SetRole(name, id, ruleset string, serviceAccount bool) error {
+//CreateRole - This set the role of a user in an organisation
+func (c *Client) CreateRole(name, id, ruleset string, serviceAccount bool) error {
 
 	url := fmt.Sprintf("%s/roles", c.UCPURL)
 
