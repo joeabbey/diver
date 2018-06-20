@@ -124,28 +124,6 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 	return bytes, nil
 }
 
-// PUT data from the server and return the response as bytes (typically an update procedure)
-func (c *Client) putRequest(url string, d []byte) ([]byte, error) {
-
-	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(d))
-	if err != nil {
-		return nil, err
-	}
-
-	// Add authorisation token to HTTP header
-	if len(c.Token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-
-	bytes, err := c.doRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
 // GET data from the server and stream the output
 func (c *Client) getRequestStream(url string, d []byte) error {
 
