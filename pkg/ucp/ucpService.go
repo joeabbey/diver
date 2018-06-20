@@ -133,8 +133,8 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 			}
 		}
 
-		// Print all networks attached to task
-		if q.Networks {
+		// Print all networks attached to task (Only if attachements exist)
+		if q.Networks && len(tasks[i].NetworksAttachments) != 0 {
 			var networkString string
 			for n := range tasks[i].NetworksAttachments {
 				for a := range tasks[i].NetworksAttachments[n].Addresses {
@@ -157,6 +157,8 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 				}
 			}
 			fmt.Printf("%s", networkString)
+		} else {
+			fmt.Printf("Unattached\t")
 		}
 
 		if q.State {

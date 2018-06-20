@@ -174,7 +174,7 @@ var ucpAuthOrgList = &cobra.Command{
 
 		//orgs, err := client.GetAllOrgs()
 		var accountQuery ucp.Account
-		accountQuery.IsOrg = false
+		accountQuery.IsOrg = true
 
 		orgs, err := client.GetAccounts(accountQuery, 1000)
 
@@ -281,9 +281,12 @@ var ucpAuthUsersList = &cobra.Command{
 			return
 		}
 		log.Debugf("Found %d Accounts", len(users.Accounts))
-		fmt.Printf("Org Name\tFullname\n")
+		fmt.Printf("User Name\tFullname\n")
 		for _, acct := range users.Accounts {
-			fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+			// Not sure why we're still retrieving ORGs even though we said false above - TODO
+			if !acct.IsOrg {
+				fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+			}
 		}
 
 	},
