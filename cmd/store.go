@@ -28,9 +28,11 @@ func init() {
 
 	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Set the ID string for the subscription")
 	storeSubscriptionsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+	storeUser.Flags().StringVar(&id, "id", "", "Retrieve information about a specified user")
 
 	storeCmd.AddCommand(storeLicenses)
 	storeCmd.AddCommand(storeSubscriptions)
+	storeCmd.AddCommand(storeUser)
 	storeSubscriptions.AddCommand(storeSubscriptionsList)
 	diverCmd.AddCommand(storeCmd)
 
@@ -89,12 +91,10 @@ var storeSubscriptionsList = &cobra.Command{
 			log.Warn("Unable to find existing session, please login")
 			return
 		}
-		subs, err := existingClient.GetAllSubscriptions(id)
+		err = existingClient.GetAllSubscriptions(id)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		log.Debugf("%v", string(subs))
-
 	},
 }
 
@@ -103,5 +103,23 @@ var storeLicenses = &cobra.Command{
 	Short: "Docker Store licenses",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
+	},
+}
+
+var storeUser = &cobra.Command{
+	Use:   "user",
+	Short: "Return Docker Store User Information",
+	Run: func(cmd *cobra.Command, args []string) {
+		existingClient, err := store.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			cmd.Help()
+			log.Warn("Unable to find existing session, please login")
+			return
+		}
+		err = existingClient.GetUserInfo(id)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 	},
 }
