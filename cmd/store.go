@@ -12,6 +12,7 @@ import (
 
 var storeClient store.Client
 var id string
+var firstActive bool
 var logLevel = 5
 
 func init() {
@@ -27,6 +28,8 @@ func init() {
 	storeCmd.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Set the ID string for the subscription")
+	storeSubscriptionsList.Flags().BoolVar(&firstActive, "firstactive", false, "Retrieve first active subscription")
+
 	storeSubscriptionsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	storeUser.Flags().StringVar(&id, "id", "", "Retrieve information about a specified user")
 
@@ -91,6 +94,14 @@ var storeSubscriptionsList = &cobra.Command{
 			log.Warn("Unable to find existing session, please login")
 			return
 		}
+		if firstActive == true {
+			err = existingClient.GetFirstActiveSubscription(id)
+			if err != nil {
+				log.Fatalf("%v", err)
+			}
+			return
+		}
+
 		err = existingClient.GetAllSubscriptions(id)
 		if err != nil {
 			log.Fatalf("%v", err)

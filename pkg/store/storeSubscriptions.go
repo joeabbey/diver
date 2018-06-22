@@ -58,3 +58,29 @@ func (c *Client) GetAllSubscriptions(id string) error {
 
 	return nil
 }
+
+//GetFirstActiveSubscription - Retrieves all subscriptions
+func (c *Client) GetFirstActiveSubscription(id string) error {
+	log.Debugf("Retrieving all subscriptions")
+	url := fmt.Sprintf("%s/?docker_id=%s", c.HUBURL, id)
+	log.Debugf("Url = %s", url)
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return err
+	}
+
+	var returnedSubs []Subscription
+
+	err = json.Unmarshal(response, &returnedSubs)
+	if err != nil {
+		return err
+	}
+	for i := range returnedSubs {
+		if returnedSubs[i].State == "active" {
+			fmt.Printf("%s\n", returnedSubs[i].SubscriptionID)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("No Active Subscriptions found")
+}
