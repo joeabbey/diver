@@ -33,6 +33,10 @@ func init() {
 	storeSubscriptionsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	storeUser.Flags().StringVar(&id, "id", "", "Retrieve information about a specified user")
 
+	storeLicensesGet.Flags().StringVar(&id, "subscription", "", "Set which subscription to retrieve the license")
+
+	storeLicenses.AddCommand(storeLicensesGet)
+
 	storeCmd.AddCommand(storeLicenses)
 	storeCmd.AddCommand(storeSubscriptions)
 	storeCmd.AddCommand(storeUser)
@@ -114,6 +118,21 @@ var storeLicenses = &cobra.Command{
 	Short: "Docker Store licenses",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
+	},
+}
+
+var storeLicensesGet = &cobra.Command{
+	Use:   "get",
+	Short: "Retrieve a Subscription license",
+	Run: func(cmd *cobra.Command, args []string) {
+		existingClient, err := store.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			cmd.Help()
+			log.Warn("Unable to find existing session, please login")
+			return
+		}
+		existingClient.GetLicense(id)
 	},
 }
 
