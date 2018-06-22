@@ -31,7 +31,7 @@ func init() {
 	storeSubscriptionsList.Flags().BoolVar(&firstActive, "firstactive", false, "Retrieve first active subscription")
 
 	storeSubscriptionsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-	storeUser.Flags().StringVar(&id, "id", "", "Retrieve information about a specified user")
+	storeUser.Flags().StringVar(&id, "user", "", "Retrieve information about a specified user")
 
 	storeLicensesGet.Flags().StringVar(&id, "subscription", "", "Set which subscription to retrieve the license")
 

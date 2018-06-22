@@ -88,7 +88,7 @@ To retrieve the Docker Store User ID for this user use the following command:
 
 `./diver store user`
 
-The `ID` field is used for retrieving subscriptions and licenses, other users can be examined by using the `--id <username>` flag.
+The `ID` field is used for retrieving subscriptions and licenses, other users can be examined by using the `--user <username>` flag.
 
 Retrieve subscriptions for this user with the following command:
 
