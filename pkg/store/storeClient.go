@@ -1,4 +1,4 @@
-package ucp
+package store
 
 import (
 	"bytes"
@@ -17,7 +17,8 @@ import (
 type Client struct {
 	Username   string
 	Password   string
-	UCPURL     string
+	STOREURL   string
+	HUBURL     string
 	IgnoreCert bool
 	Token      string
 }
@@ -27,7 +28,7 @@ func NewBasicAuthClient(username, password, url string, ignoreCert bool) *Client
 	return &Client{
 		Username:   username,
 		Password:   password,
-		UCPURL:     url,
+		STOREURL:   url,
 		IgnoreCert: ignoreCert,
 	}
 }
@@ -35,18 +36,18 @@ func NewBasicAuthClient(username, password, url string, ignoreCert bool) *Client
 // Connect - Will attempt to connect to UCP
 func (c *Client) Connect() error {
 	if c.Username == "" {
-		return fmt.Errorf("UCP Username hasn't been entered")
+		return fmt.Errorf("Username hasn't been entered")
 	}
 
 	if c.Password == "" {
-		return fmt.Errorf("UCP Password is blank")
+		return fmt.Errorf("Password is blank")
 	}
 
-	if c.UCPURL == "" {
-		return fmt.Errorf("UCP URL hasn't been entered")
+	if c.STOREURL == "" {
+		return fmt.Errorf("URL hasn't been entered")
 	}
 	// Add the /auth/log to the URL
-	url := fmt.Sprintf("%s/auth/login", c.UCPURL)
+	url := fmt.Sprintf("%s/users/login", c.STOREURL)
 
 	data := map[string]string{
 		"username": c.Username,
@@ -63,15 +64,15 @@ func (c *Client) Connect() error {
 		return err
 	}
 	log.Debugf("%v", string(response))
-
 	var responseData map[string]interface{}
 	err = json.Unmarshal(response, &responseData)
 	if err != nil {
 		return err
 	}
-	if responseData["auth_token"] != nil {
-		c.Token = responseData["auth_token"].(string)
+	if responseData["token"] != nil {
+		c.Token = responseData["token"].(string)
 	} else {
+
 		return fmt.Errorf("No Authorisation token returned")
 	}
 	return nil
@@ -114,6 +115,7 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 	// Add authorisation token to HTTP header
 	if len(c.Token) != 0 {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+		log.Debugf("Adding AuthHeader = [%v]", req.Header)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -284,14 +286,19 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 		// Return Body, can be processed with ucp.ParseURL elsewhere
 		return nil, fmt.Errorf("%s", body)
+
+	default:
+		log.Debugf("Unwatched error code %d", resp.StatusCode)
 	}
 	return body, nil
 }
 
 type internal struct {
-	UCPAddress string `json:"address"`
-	Token      string `json:"token"`
-	IgnoreCert bool   `json:"ignoreCert"`
+	StoreAddress string `json:"storeAddress"`
+	HubAddress   string `json:"hubAddress"`
+	Token        string `json:"token"`
+	IgnoreCert   bool   `json:"ignoreCert"`
+	Username     string `json:"username"`
 }
 
 // WriteToken - Writes a copy of the token to the
@@ -302,13 +309,15 @@ func (c *Client) WriteToken() error {
 	}
 
 	// build path
-	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
+	path := fmt.Sprintf("%s/.storetoken", os.Getenv("HOME"))
 	log.Debugf("Writing Token to [%s]", path)
 
 	clientToken := internal{
-		UCPAddress: c.UCPURL,
-		Token:      c.Token,
-		IgnoreCert: c.IgnoreCert,
+		StoreAddress: c.STOREURL,
+		HubAddress:   c.HUBURL,
+		Username:     c.Username,
+		Token:        c.Token,
+		IgnoreCert:   c.IgnoreCert,
 	}
 
 	b, err := json.Marshal(clientToken)
@@ -325,7 +334,7 @@ func (c *Client) WriteToken() error {
 // ReadToken - Reads the token from a file
 func ReadToken() (*Client, error) {
 	// build path
-	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
+	path := fmt.Sprintf("%s/.storetoken", os.Getenv("HOME"))
 	log.Debugf("Reading Token from [%s]", path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -340,7 +349,9 @@ func ReadToken() (*Client, error) {
 	}
 
 	client := &Client{
-		UCPURL:     clientToken.UCPAddress,
+		STOREURL:   clientToken.StoreAddress,
+		HUBURL:     clientToken.HubAddress,
+		Username:   clientToken.Username,
 		Token:      clientToken.Token,
 		IgnoreCert: clientToken.IgnoreCert,
 	}
