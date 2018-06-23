@@ -69,7 +69,14 @@ func init() {
 	ucpAuthUsers.AddCommand(ucpAuthOrgDelete)
 	ucpAuthUsers.AddCommand(ucpAuthUsersList)
 
-	//UCP ROOT
+	// UCP Grants
+	ucpAuth.AddCommand(ucpAuthGrants)
+	ucpAuthGrants.AddCommand(ucpAuthGrantsCreate)
+	ucpAuthGrants.AddCommand(ucpAuthGrantsGet)
+	ucpAuthGrants.AddCommand(ucpAuthGrantsList)
+	ucpAuthGrantsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+
+	// UCP ROOT
 	UCPRoot.AddCommand(ucpAuth)
 
 }
@@ -350,7 +357,7 @@ var ucpAuthRolesGet = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		rules, err := client.GetRole(name)
+		rules, err := client.GetRoleRuleset(name)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -359,6 +366,80 @@ var ucpAuthRolesGet = &cobra.Command{
 }
 
 var ucpAuthRolesCreate = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new role based upon a ruleset",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No role specified to download")
+		}
+
+		rulefile, err := ioutil.ReadFile(rulesetfile)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		err = client.CreateRole(name, name, string(rulefile), admin)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Role [%s] created succesfully", name)
+	},
+}
+
+var ucpAuthGrants = &cobra.Command{
+	Use:   "grants",
+	Short: "Manage Docker EE Grants",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		cmd.Help()
+	},
+}
+
+var ucpAuthGrantsList = &cobra.Command{
+	Use:   "list",
+	Short: "List Docker EE Grants",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		err = client.GetGrants(true)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+	},
+}
+
+var ucpAuthGrantsGet = &cobra.Command{
+	Use:   "get",
+	Short: "List all rules for a particular grant",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No role specified to download")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		rules, err := client.GetRoleRuleset(name)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		fmt.Printf("%s", rules)
+	},
+}
+
+var ucpAuthGrantsCreate = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new role based upon a ruleset",
 	Run: func(cmd *cobra.Command, args []string) {
