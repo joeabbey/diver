@@ -45,6 +45,19 @@ type grant struct {
 	SubjectID string `json:"subjectID"`
 }
 
+//collection’, 'namespace’, or 'grantobject
+
+const (
+	// GrantCollection - (default) specifies a grant is created against a collection
+	GrantCollection uint = 1 << iota
+
+	// GrantNamespace - A grant is made against a namespace (kubernetes)
+	GrantNamespace
+
+	// GrantObject - kubernetesnamespaces target, which is used to give grants against all Kubernetes namespaces.
+	GrantObject
+)
+
 //GetOrg - TODO
 func (c *Client) GetOrg(orgName string) error {
 	log.Debugf("Searching for Org [%s]", orgName)
@@ -150,7 +163,7 @@ func (c *Client) returnAllCollections() ([]collection, error) {
 	return collections, nil
 }
 
-//GetGrants - This set the role of a user in an organisation
+//GetGrants - This will return a list of all grants, it can also resolve the UUIDs to names
 func (c *Client) GetGrants(resolve bool) error {
 
 	url := fmt.Sprintf("%s/collectionGrants?limit=1000", c.UCPURL)
@@ -213,5 +226,19 @@ func (c *Client) GetGrants(resolve bool) error {
 	}
 
 	log.Debugf("%v", grants.Subjects)
+	return nil
+}
+
+//SetGrant - This takes a subject and a role (ruleset) and applies it to a collection
+func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
+
+	url := fmt.Sprintf("%s/collectionGrants/%s/%s/%s", c.UCPURL, subject, collection, role)
+	log.Debugf("built URL [%s]", url)
+
+	_, err := c.putRequest(url, nil)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

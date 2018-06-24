@@ -10,8 +10,8 @@ import (
 )
 
 var auth ucp.Account
-var name, rulesetfile string
-var admin, inactive bool
+var name, ruleset, collection string
+var admin, inactive, resolve bool
 
 func init() {
 	// Auth flags
@@ -34,18 +34,17 @@ func init() {
 	// User/Org Delete flags
 	ucpAuthOrgDelete.Flags().StringVar(&auth.Name, "name", "", "Existing Organisation")
 	ucpAuthOrgDelete.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+	ucpAuthOrgList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	ucpAuthUsersDelete.Flags().StringVar(&auth.Name, "name", "", "Existing username")
 	ucpAuthUsersDelete.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
-	ucpAuthOrgList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpAuthUsersList.Flags().BoolVar(&admin, "admin", false, "Retrieve *only* Administrative users")
 	ucpAuthUsersList.Flags().BoolVar(&inactive, "inactive", false, "Retrieve *only* inactive users")
 	ucpAuthUsersList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	ucpAuthRolesGet.Flags().StringVar(&name, "rolename", "", "Name of the role retrieve")
 	ucpAuthRolesCreate.Flags().StringVar(&name, "rolename", "", "Name of the role to create")
-	ucpAuthRolesCreate.Flags().StringVar(&rulesetfile, "ruleset", "", "Path to a ruleset (JSON) to be used")
+	ucpAuthRolesCreate.Flags().StringVar(&ruleset, "ruleset", "", "Path to a ruleset (JSON) to be used")
 	ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a service account")
 
 	// UCP ORG
@@ -71,10 +70,14 @@ func init() {
 
 	// UCP Grants
 	ucpAuth.AddCommand(ucpAuthGrants)
-	ucpAuthGrants.AddCommand(ucpAuthGrantsCreate)
+	ucpAuthGrants.AddCommand(ucpAuthGrantsSet)
 	ucpAuthGrants.AddCommand(ucpAuthGrantsGet)
 	ucpAuthGrants.AddCommand(ucpAuthGrantsList)
 	ucpAuthGrantsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+	ucpAuthGrantsList.Flags().BoolVar(&resolve, "resolve", false, "Resolve the UUIDs to subject,role and grant names")
+	ucpAuthGrantsSet.Flags().StringVar(&name, "subject", "", "The subject (user/org) that will be used")
+	ucpAuthGrantsSet.Flags().StringVar(&ruleset, "role", "", "The role providing the capabilites")
+	ucpAuthGrantsSet.Flags().StringVar(&collection, "collection", "", "The collection that will user")
 
 	// UCP ROOT
 	UCPRoot.AddCommand(ucpAuth)
@@ -375,7 +378,7 @@ var ucpAuthRolesCreate = &cobra.Command{
 			log.Fatalln("No role specified to download")
 		}
 
-		rulefile, err := ioutil.ReadFile(rulesetfile)
+		rulefile, err := ioutil.ReadFile(ruleset)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -411,7 +414,7 @@ var ucpAuthGrantsList = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		err = client.GetGrants(true)
+		err = client.GetGrants(resolve)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -439,19 +442,24 @@ var ucpAuthGrantsGet = &cobra.Command{
 	},
 }
 
-var ucpAuthGrantsCreate = &cobra.Command{
-	Use:   "create",
-	Short: "Create a new role based upon a ruleset",
+var ucpAuthGrantsSet = &cobra.Command{
+	Use:   "set",
+	Short: "Set a new grant linking a user through a role to a collection",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 		if name == "" {
 			cmd.Help()
-			log.Fatalln("No role specified to download")
+			log.Fatalln("No subject specified")
 		}
 
-		rulefile, err := ioutil.ReadFile(rulesetfile)
-		if err != nil {
-			log.Fatalf("%v", err)
+		if ruleset == "" {
+			cmd.Help()
+			log.Fatalln("No role specified")
+		}
+
+		if collection == "" {
+			cmd.Help()
+			log.Fatalln("No collection specified")
 		}
 
 		client, err := ucp.ReadToken()
@@ -459,14 +467,10 @@ var ucpAuthGrantsCreate = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-		err = client.CreateRole(name, name, string(rulefile), admin)
+		err = client.SetGrant(collection, ruleset, name, ucp.GrantCollection)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		log.Infof("Role [%s] created succesfully", name)
+		log.Infof("Grant created succesfully", name)
 	},
 }
-
-// ucpAuthRolesCreate.Flags().StringVar(&name, "rolename", "", "Name of the role to create")
-// ucpAuthRolesCreate.Flags().StringVar(&rulesetfile, "ruleset", "", "Path to a ruleset (JSON) to be used")
-// ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a service account")
