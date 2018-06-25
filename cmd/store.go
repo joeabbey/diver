@@ -27,7 +27,7 @@ func init() {
 
 	storeCmd.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
-	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Set the ID string for the subscription")
+	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Docker Store ID, by default will take the ID from ~/.dockerstore")
 	storeSubscriptionsList.Flags().BoolVar(&firstActive, "firstactive", false, "Retrieve first active subscription")
 
 	storeSubscriptionsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
@@ -144,7 +144,7 @@ var storeUser = &cobra.Command{
 		if err != nil {
 			// Fatal error if can't read the token
 			cmd.Help()
-			log.Warn("Unable to find existing session, please login")
+			log.Warn("Unable to find existing session,")
 			return
 		}
 		err = existingClient.GetUserInfo(id)

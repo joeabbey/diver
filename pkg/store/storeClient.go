@@ -21,6 +21,7 @@ type Client struct {
 	HUBURL     string
 	IgnoreCert bool
 	Token      string
+	ID         string
 }
 
 // NewBasicAuthClient - Creates a basic client to connecto the UCP
@@ -71,8 +72,12 @@ func (c *Client) Connect() error {
 	}
 	if responseData["token"] != nil {
 		c.Token = responseData["token"].(string)
+		user, err := c.userInfo(c.Username)
+		if err != nil {
+			return err
+		}
+		c.ID = user.ID
 	} else {
-
 		return fmt.Errorf("No Authorisation token returned")
 	}
 	return nil
@@ -299,6 +304,7 @@ type internal struct {
 	Token        string `json:"token"`
 	IgnoreCert   bool   `json:"ignoreCert"`
 	Username     string `json:"username"`
+	ID           string `json:"id"`
 }
 
 // WriteToken - Writes a copy of the token to the
@@ -318,6 +324,7 @@ func (c *Client) WriteToken() error {
 		Username:     c.Username,
 		Token:        c.Token,
 		IgnoreCert:   c.IgnoreCert,
+		ID:           c.ID,
 	}
 
 	b, err := json.Marshal(clientToken)
@@ -354,6 +361,7 @@ func ReadToken() (*Client, error) {
 		Username:   clientToken.Username,
 		Token:      clientToken.Token,
 		IgnoreCert: clientToken.IgnoreCert,
+		ID:         clientToken.ID,
 	}
 
 	return client, nil

@@ -36,6 +36,12 @@ type Subscription struct {
 //GetAllSubscriptions - Retrieves all subscriptions
 func (c *Client) GetAllSubscriptions(id string) error {
 	log.Debugf("Retrieving all subscriptions")
+
+	if id == "" {
+		log.Debugf("Attempting to read ID from ~/.dockerstore")
+		id = c.ID
+	}
+
 	url := fmt.Sprintf("%s/?docker_id=%s", c.HUBURL, id)
 	log.Debugf("Url = %s", url)
 	response, err := c.getRequest(url, nil)
@@ -62,6 +68,11 @@ func (c *Client) GetAllSubscriptions(id string) error {
 //GetFirstActiveSubscription - Retrieves all subscriptions
 func (c *Client) GetFirstActiveSubscription(id string) error {
 	log.Debugf("Retrieving all subscriptions")
+
+	if id == "" {
+		log.Debugf("Attempting to read ID from ~/.dockerstore")
+		id = c.ID
+	}
 	url := fmt.Sprintf("%s/?docker_id=%s", c.HUBURL, id)
 	log.Debugf("Url = %s", url)
 	response, err := c.getRequest(url, nil)
