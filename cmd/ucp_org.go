@@ -215,9 +215,9 @@ var ucpAuthOrgList = &cobra.Command{
 			return
 		}
 		log.Debugf("Found %d Accounts", len(orgs.Accounts))
-		fmt.Printf("Org Name\tFullname\n")
+		fmt.Printf("Org Name\tID\tFullname\n")
 		for _, acct := range orgs.Accounts {
-			fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+			fmt.Printf("%s\t%s\t%s\n", acct.Name, acct.ID, acct.FullName)
 		}
 	},
 }
@@ -305,11 +305,11 @@ var ucpAuthUsersList = &cobra.Command{
 			return
 		}
 		log.Debugf("Found %d Accounts", len(users.Accounts))
-		fmt.Printf("User Name\tFullname\n")
+		fmt.Printf("User Name\tID\tFullname\t\n")
 		for _, acct := range users.Accounts {
 			// Not sure why we're still retrieving ORGs even though we said false above - TODO
 			if !acct.IsOrg {
-				fmt.Printf("%s\t%s\n", acct.Name, acct.FullName)
+				fmt.Printf("%s\t%s\t%s\n", acct.Name, acct.ID, acct.FullName)
 			}
 		}
 

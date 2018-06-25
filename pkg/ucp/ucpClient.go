@@ -288,6 +288,10 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 		// Return Body, can be processed with ucp.ParseURL elsewhere
 		return nil, fmt.Errorf("%s", body)
+	case 500:
+		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
+		// Return Body, can be processed with ucp.ParseURL elsewhere
+		return nil, fmt.Errorf("%s", body)
 	default:
 		log.Debugf("[Untrapped return code] %d", resp.StatusCode)
 	}
