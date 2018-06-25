@@ -10,7 +10,7 @@ import (
 )
 
 var auth ucp.Account
-var name, ruleset, collection string
+var name, ruleset, collection, collectionType string
 var admin, inactive, resolve bool
 
 func init() {
@@ -78,6 +78,7 @@ func init() {
 	ucpAuthGrantsSet.Flags().StringVar(&name, "subject", "", "The subject (user/org) that will be used")
 	ucpAuthGrantsSet.Flags().StringVar(&ruleset, "role", "", "The role providing the capabilites")
 	ucpAuthGrantsSet.Flags().StringVar(&collection, "collection", "", "The collection that will user")
+	ucpAuthGrantsSet.Flags().StringVar(&collectionType, "type", "collection", "Type of grant: collection / namespace / all")
 
 	// UCP ROOT
 	UCPRoot.AddCommand(ucpAuth)
@@ -462,15 +463,28 @@ var ucpAuthGrantsSet = &cobra.Command{
 			log.Fatalln("No collection specified")
 		}
 
+		var grantFlag uint
+		switch collectionType {
+		case "collection":
+			grantFlag = ucp.GrantCollection
+		case "namespace":
+			grantFlag = ucp.GrantNamespace
+		case "all":
+			grantFlag = ucp.GrantObject
+		default:
+			cmd.Help()
+			log.Fatalf("Unknown Grant type [%s]", collectionType)
+		}
+
 		client, err := ucp.ReadToken()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
 
-		err = client.SetGrant(collection, ruleset, name, ucp.GrantCollection)
+		err = client.SetGrant(collection, ruleset, name, grantFlag)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		log.Infof("Grant created succesfully", name)
+		log.Infof("Grant created succesfully")
 	},
 }

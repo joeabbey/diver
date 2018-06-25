@@ -232,7 +232,20 @@ func (c *Client) GetGrants(resolve bool) error {
 //SetGrant - This takes a subject and a role (ruleset) and applies it to a collection
 func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 
-	url := fmt.Sprintf("%s/collectionGrants/%s/%s/%s", c.UCPURL, subject, collection, role)
+	// Parser flags
+	var grantType string
+	switch flags {
+	case (GrantCollection):
+		grantType = "collection’"
+	case (GrantNamespace):
+		grantType = "namespace’"
+	case (GrantObject):
+		grantType = "grantobject’"
+	default:
+		return fmt.Errorf("Unknown Grant Type")
+	}
+
+	url := fmt.Sprintf("%s/collectionGrants/%s/%s/%s?type=%s", c.UCPURL, subject, collection, role, grantType)
 	log.Debugf("built URL [%s]", url)
 
 	_, err := c.putRequest(url, nil)
