@@ -2,13 +2,15 @@
 
 This is a tool to interact with the APIs of the Docker Enterprise Edition products enabling an end user to provision, manage and monitor the platform. 
 
-### Building
+## Building
 
 Once the repo is cloned build with `make build`, or `make docker` to create a container locally that contains the binary.
 
-### Usage
+Alternatively you can manually compile `diver` through the use of `go build`.
 
-The main commands are `dtr` and `ucp` that interact directly with those areas of the EE platform.
+## Usage
+
+The main commands are `dtr`, `ucp` and `store` that interact directly with those areas of the EE platform or the Docker store.
 
 ```
 ./diver -h
@@ -20,6 +22,7 @@ Usage:
 Available Commands:
   dtr         Docker Trusted Registry
   help        Help about any command
+  store       Docker Store
   ucp         Universal Control Plane 
 
 Flags:
@@ -28,17 +31,17 @@ Flags:
 Use "diver [command] --help" for more information about a command.
 ```
 
-**Logging in to UCP**
+### Logging in to UCP
 
 ```
-./diver ucp --username docker               \
-            --password password             \
-            --url https://docker01.fnnrn.me \
-            --ignorecert
+./diver ucp login --username docker               \
+                  --password password             \
+                  --url https://docker01.fnnrn.me \
+                  --ignorecert
 INFO[0000] Succesfully logged into [https://docker01.fnnrn.me] 
 ```
 
-**Creating users/organisations**
+### Creating users/organisations
 
 This uses the `auth` command as part of `ucp`.
 
@@ -53,7 +56,8 @@ This will create a new **user** called `bob`, to create an organisation use the 
                  --action create
 ```
 
-***Working with Roles***
+
+### Working with Roles
 
 Once logged in you can list/get and create roles as per the example below:
 
@@ -68,7 +72,56 @@ dan $ ./diver ucp auth roles list | grep jenkins
 998612c1-b367-42af-9d82-b2a5de9f8851    false   jenkins
 ```
 
-**Downloading the client bundle**
+### Working with Grants
+
+**Listing**
+To list all current grants you can use the following command:
+`./diver ucp auth grants list`
+
+To **resolve** the gran UUID to an actual `name` use the `--resolve` flag when listing grants.
+
+**Creating**
+
+To create a grant use the command `./diver ucp auth grants set` with the following flags:
+
+`--collection` - Can either be a collection path or a Kubernetes namespace.
+`--subject` - A user or service account.
+`--role` - A role that has been created in UCP
+`--type` - The type of grant that will be applied to, can be a `collection` grant, a single `namespace` grant or `all` kube namespaces.
+
+**NOTE**: Unless the accounts are pre-configured UCP accounts then the UUIDs will need to be passed to this command.
+
+#### EXAMPLE - Deploying HELM
+
+**Before Installing Helm**
+
+Create a Kubernetes service account:
+`kubectl create serviceaccount --namespace kube-system tiller`
+
+Create a grant for the `tiller` service account:
+
+```
+  ./diver ucp auth grants set --role fullcontrol       \
+  --subject system:serviceaccount:kube-system:tiller  \
+  --collection kubernetesnamespaces                    \
+  --type all
+```
+
+Install (or init) Helm
+
+`helm init`
+
+Correct the service account
+
+`kubectl patch deploy --namespace kube-system tiller-deploy -p ‘{“spec”:{“template”:{“spec”:{“serviceAccount”:”tiller”}}}}’`
+
+Deploy using Helm! 
+
+e.g MySQL deployment.
+
+`helm install --name mysql stable/mysql`
+
+### Downloading the client bundle
 
 Download the client bundle to your local machine.
 
@@ -77,7 +130,7 @@ Download the client bundle to your local machine.
 INFO[0000] Downloading the UCP Client Bundle            
 ```
 
-**Interacting with Docker Store**
+### Interacting with Docker Store
 
 Logging into the Docker Store through the following command:
 
@@ -104,17 +157,17 @@ This will print the raw output so it is advisable to pipe this to a file with th
 
 `> ./subscription_ID.lic`
 
-**Watching Containers**
+### Watching Containers
 
 This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
 
 
 ```
-./diver ucp containers --top
+./diver ucp containers top
 ```
 
 ![](img/container-top.jpg)
 
-**Debugging Issues**
+### Debugging Issues
 
 When errors are reported turn up the `--logLevel` to 5, which enables debugging output.
