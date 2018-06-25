@@ -85,8 +85,11 @@ To **resolve** the gran UUID to an actual `name` use the `--resolve` flag when l
 To create a grant use the command `./diver ucp auth grants set` with the following flags:
 
 `--collection` - Can either be a collection path or a Kubernetes namespace.
+
 `--subject` - A user or service account.
+
 `--role` - A role that has been created in UCP
+
 `--type` - The type of grant that will be applied to, can be a `collection` grant, a single `namespace` grant or `all` kube namespaces.
 
 **NOTE**: Unless the accounts are pre-configured UCP accounts then the UUIDs will need to be passed to this command.
