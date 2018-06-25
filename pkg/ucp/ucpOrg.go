@@ -236,11 +236,11 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 	var grantType string
 	switch flags {
 	case (GrantCollection):
-		grantType = "collection’"
+		grantType = "collection"
 	case (GrantNamespace):
-		grantType = "namespace’"
+		grantType = "namespace"
 	case (GrantObject):
-		grantType = "grantobject’"
+		grantType = "grantobject"
 	default:
 		return fmt.Errorf("Unknown Grant Type")
 	}

@@ -79,6 +79,7 @@ func init() {
 	ucpAuthGrantsSet.Flags().StringVar(&ruleset, "role", "", "The role providing the capabilites")
 	ucpAuthGrantsSet.Flags().StringVar(&collection, "collection", "", "The collection that will user")
 	ucpAuthGrantsSet.Flags().StringVar(&collectionType, "type", "collection", "Type of grant: collection / namespace / all")
+	ucpAuthGrantsSet.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	// UCP ROOT
 	UCPRoot.AddCommand(ucpAuth)
@@ -483,7 +484,8 @@ var ucpAuthGrantsSet = &cobra.Command{
 
 		err = client.SetGrant(collection, ruleset, name, grantFlag)
 		if err != nil {
-			log.Fatalf("%v", err)
+			ucp.ParseUCPError([]byte(err.Error()))
+			return
 		}
 		log.Infof("Grant created succesfully")
 	},

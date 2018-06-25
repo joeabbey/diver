@@ -276,6 +276,10 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		log.Debug("[success] HTTP Status code 201")
 	case 204:
 		log.Debug("[success] HTTP Status code 204")
+	case 400:
+		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
+		// Return Body, can be processed with ucp.ParseURL elsewhere
+		return nil, fmt.Errorf("%s", body)
 	case 401:
 		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 		// Return Body, can be processed with ucp.ParseURL elsewhere
@@ -284,6 +288,8 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 		// Return Body, can be processed with ucp.ParseURL elsewhere
 		return nil, fmt.Errorf("%s", body)
+	default:
+		log.Debugf("[Untrapped return code] %d", resp.StatusCode)
 	}
 	return body, nil
 }
