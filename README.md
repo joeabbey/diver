@@ -31,7 +31,7 @@ Flags:
 Use "diver [command] --help" for more information about a command.
 ```
 
-###Logging in to UCP
+### Logging in to UCP
 
 ```
 ./diver ucp login --username docker               \
@@ -41,7 +41,7 @@ Use "diver [command] --help" for more information about a command.
 INFO[0000] Succesfully logged into [https://docker01.fnnrn.me] 
 ```
 
-###Creating users/organisations
+### Creating users/organisations
 
 This uses the `auth` command as part of `ucp`.
 
@@ -57,7 +57,7 @@ This will create a new **user** called `bob`, to create an organisation use the 
 ```
 
 
-###Working with Roles
+### Working with Roles
 
 Once logged in you can list/get and create roles as per the example below:
 
@@ -72,7 +72,7 @@ dan $ ./diver ucp auth roles list | grep jenkins
 998612c1-b367-42af-9d82-b2a5de9f8851    false   jenkins
 ```
 
-###Working with Grants
+### Working with Grants
 
 **Listing**
 To list all current grants you can use the following command:
@@ -91,7 +91,7 @@ To create a grant use the command `./diver ucp auth grants set` with the followi
 
 **NOTE**: Unless the accounts are pre-configured UCP accounts then the UUIDs will need to be passed to this command.
 
-####EXAMPLE - Deploying HELM
+#### EXAMPLE - Deploying HELM
 
 **Before Installing Helm**
 
@@ -121,7 +121,7 @@ e.g MySQL deployment.
 
 `helm install --name mysql stable/mysql`
 
-###Downloading the client bundle
+### Downloading the client bundle
 
 Download the client bundle to your local machine.
 
@@ -130,7 +130,7 @@ Download the client bundle to your local machine.
 INFO[0000] Downloading the UCP Client Bundle            
 ```
 
-###Interacting with Docker Store
+### Interacting with Docker Store
 
 Logging into the Docker Store through the following command:
 
@@ -157,7 +157,7 @@ This will print the raw output so it is advisable to pipe this to a file with th
 
 `> ./subscription_ID.lic`
 
-###Watching Containers
+### Watching Containers
 
 This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
 
@@ -168,6 +168,6 @@ This will present a colour coded output on memory usage of all containers that a
 
 ![](img/container-top.jpg)
 
-###Debugging Issues
+### Debugging Issues
 
 When errors are reported turn up the `--logLevel` to 5, which enables debugging output.
