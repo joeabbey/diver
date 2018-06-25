@@ -15,6 +15,7 @@ import (
 // Account - Is the basic Account struct
 type Account struct {
 	FullName   string `json:"fullName"`
+	ID         string `json:"id"`
 	IsActive   bool   `json:"isActive"`
 	IsAdmin    bool   `json:"isAdmin"`
 	IsOrg      bool   `json:"isOrg"`
