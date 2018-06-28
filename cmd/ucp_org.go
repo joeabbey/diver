@@ -203,9 +203,9 @@ var ucpAuthOrgList = &cobra.Command{
 		orgs, err := client.GetAccounts(accountQuery, 1000)
 
 		if err != nil {
-			err = ucp.ParseUCPError([]byte(err.Error()))
-			if err != nil {
-				log.Errorf("Error parsing UCP error: %v", err)
+			parseerr := ucp.ParseUCPError([]byte(err.Error()))
+			if parseerr != nil {
+				log.Debugf("Error parsing error")
 			}
 			log.Fatalf("%v", err)
 		}
