@@ -10,33 +10,11 @@ import (
 	"strconv"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/thebsdbox/diver/pkg/ucp/types"
 )
 
-// Account - Is the basic Account struct
-type Account struct {
-	FullName   string `json:"fullName"`
-	ID         string `json:"id"`
-	IsActive   bool   `json:"isActive"`
-	IsAdmin    bool   `json:"isAdmin"`
-	IsOrg      bool   `json:"isOrg"`
-	Name       string `json:"name"`
-	Password   string `json:"password"`
-	SearchLDAP bool   `json:"searchLDAP"`
-}
-
-// AccountList - The format returned by a query of accounts
-type AccountList struct {
-	Accounts []Account `json:"accounts"`
-}
-
-// Team - is the structure for defining a team
-type Team struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
-
 // AuthStatus - will return the current logged in user
-func (c *Client) AuthStatus() (*Account, error) {
+func (c *Client) AuthStatus() (*ucptypes.Account, error) {
 	log.Debugln("Retrieving the current authorisation status")
 	url := fmt.Sprintf("%s/id/", c.UCPURL)
 
@@ -46,7 +24,7 @@ func (c *Client) AuthStatus() (*Account, error) {
 		return nil, fmt.Errorf("Unable to authenticate with existing token")
 	}
 
-	var a Account
+	var a ucptypes.Account
 
 	err = json.Unmarshal(response, &a)
 	if err != nil {
@@ -84,8 +62,8 @@ func (c *Client) GetClientBundle() error {
 }
 
 // NewAccount - Creates a new account within UCP
-func NewAccount(fullname, username, password string, isActive, isOrg, isAdmin, searchLDAP bool) *Account {
-	return &Account{
+func NewAccount(fullname, username, password string, isActive, isOrg, isAdmin, searchLDAP bool) *ucptypes.Account {
+	return &ucptypes.Account{
 		FullName:   fullname,
 		IsActive:   isActive,
 		IsAdmin:    isAdmin,
@@ -97,8 +75,8 @@ func NewAccount(fullname, username, password string, isActive, isOrg, isAdmin, s
 }
 
 // NewUser - Creates a new user accound
-func NewUser(fullname, username, password string, isActive, isAdmin, searchLDAP bool) *Account {
-	return &Account{
+func NewUser(fullname, username, password string, isActive, isAdmin, searchLDAP bool) *ucptypes.Account {
+	return &ucptypes.Account{
 		FullName:   fullname,
 		IsActive:   isActive,
 		IsAdmin:    isAdmin,
@@ -110,8 +88,8 @@ func NewUser(fullname, username, password string, isActive, isAdmin, searchLDAP 
 }
 
 // NewOrg - Creates a new organisation
-func NewOrg(fullname, username, password string, isActive, isAdmin, searchLDAP bool) *Account {
-	return &Account{
+func NewOrg(fullname, username, password string, isActive, isAdmin, searchLDAP bool) *ucptypes.Account {
+	return &ucptypes.Account{
 		FullName:   fullname,
 		IsActive:   isActive,
 		IsAdmin:    isAdmin,
@@ -123,7 +101,7 @@ func NewOrg(fullname, username, password string, isActive, isAdmin, searchLDAP b
 }
 
 //AddAccount - adds a new account to UCP
-func (c *Client) AddAccount(account *Account) error {
+func (c *Client) AddAccount(account *ucptypes.Account) error {
 	if account.IsOrg {
 		log.Infof("Creating account for Organisation [%s]", account.Name)
 	} else {
@@ -174,7 +152,7 @@ func (c *Client) DeleteAccount(account string) error {
 }
 
 //AddTeamToOrganisation - adds a team to an existing organisation
-func (c *Client) AddTeamToOrganisation(team *Team, org string) error {
+func (c *Client) AddTeamToOrganisation(team *ucptypes.Team, org string) error {
 	log.Infof("Creating team [%s]", team.Name)
 
 	url := fmt.Sprintf("%s/accounts/%s/teams", c.UCPURL, org)
@@ -255,7 +233,7 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 		return err
 	}
 
-	var accounts []Account
+	var accounts []ucptypes.Account
 
 	var action []int8 // 0 = create, 1 = delete, 2 = update
 
@@ -278,7 +256,7 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 			return fmt.Errorf("Unknown action [%s] on account", line[0])
 		}
 
-		var acct Account
+		var acct ucptypes.Account
 		acct.FullName = line[1]
 		// Is Active
 		var b bool
@@ -350,7 +328,7 @@ func (c *Client) ExportAccountsToCSV(path string) error {
 		return err
 	}
 
-	var a AccountList
+	var a ucptypes.AccountList
 
 	err = json.Unmarshal(response, &a)
 	if err != nil {
@@ -394,7 +372,7 @@ func CreateExampleAccountCSV() error {
 
 	action := "create"
 
-	acct := Account{
+	acct := ucptypes.Account{
 		FullName:   "John Doe",
 		IsActive:   true,
 		IsAdmin:    true,
@@ -424,7 +402,7 @@ func CreateExampleAccountCSV() error {
 }
 
 // GetAccounts - This will get all accounts
-func (c *Client) GetAccounts(query Account, count int) (*AccountList, error) {
+func (c *Client) GetAccounts(query ucptypes.Account, count int) (*ucptypes.AccountList, error) {
 
 	log.Infof("Retrieving Accounts from UCP")
 	// Build the URL (TODO set limit)
@@ -456,7 +434,7 @@ func (c *Client) GetAccounts(query Account, count int) (*AccountList, error) {
 		return nil, fmt.Errorf("%s", string(response))
 	}
 
-	var a AccountList
+	var a ucptypes.AccountList
 
 	err = json.Unmarshal(response, &a)
 	if err != nil {
