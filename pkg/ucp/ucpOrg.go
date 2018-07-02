@@ -171,7 +171,7 @@ func (c *Client) GetGrants(resolve bool) error {
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s", response)
 	}
 
 	type subjects struct {
