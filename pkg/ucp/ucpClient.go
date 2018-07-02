@@ -120,7 +120,7 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		return nil, err
+		return bytes, err
 	}
 	return bytes, nil
 }
@@ -269,33 +269,43 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
+	// 2xx Success / 3xx Redirection
+	if resp.StatusCode < 400 {
+		log.Debugf("[success] HTTP Status code %d", resp.StatusCode)
+		return body, nil
+	}
+	// The error code is > 400
+	log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
+
+	// Catches the "Majority" of expected responses
 	switch resp.StatusCode {
-	case 200:
-		log.Debug("[success] HTTP Status code 200")
-	case 201:
-		log.Debug("[success] HTTP Status code 201")
-	case 204:
-		log.Debug("[success] HTTP Status code 204")
 	case 400:
-		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
-		// Return Body, can be processed with ucp.ParseURL elsewhere
-		return nil, fmt.Errorf("%s", body)
+		return body, fmt.Errorf("Code %d, Bad Request", resp.StatusCode)
 	case 401:
-		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
-		// Return Body, can be processed with ucp.ParseURL elsewhere
-		return nil, fmt.Errorf("%s", body)
+		return body, fmt.Errorf("Code %d, Unauthorised", resp.StatusCode)
+	case 402:
+		return body, fmt.Errorf("Code %d, Payment Required", resp.StatusCode) //unused
+	case 403:
+		return body, fmt.Errorf("Code %d, Forbidden", resp.StatusCode)
 	case 404:
-		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
-		// Return Body, can be processed with ucp.ParseURL elsewhere
-		return nil, fmt.Errorf("%s", body)
+		return body, fmt.Errorf("Code %d, Not Found", resp.StatusCode)
+	case 405:
+		return body, fmt.Errorf("Code %d, Method Not Allowed", resp.StatusCode)
 	case 500:
-		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
-		// Return Body, can be processed with ucp.ParseURL elsewhere
-		return nil, fmt.Errorf("%s", body)
+		return body, fmt.Errorf("Code %d, Internal Server Error", resp.StatusCode)
+	case 501:
+		return body, fmt.Errorf("Code %d, Not Implemented", resp.StatusCode)
+	case 502:
+		return body, fmt.Errorf("Code %d, Bad Gateway", resp.StatusCode)
+	case 503:
+		return body, fmt.Errorf("Code %d, Service Unavailable", resp.StatusCode)
+	case 504:
+		return body, fmt.Errorf("Code %d, Gateway Timeout", resp.StatusCode)
 	default:
 		log.Debugf("[Untrapped return code] %d", resp.StatusCode)
+		return body, fmt.Errorf("Code %s", resp.Status)
+
 	}
-	return body, nil
 }
 
 type internal struct {
@@ -339,14 +349,14 @@ func ReadToken() (*Client, error) {
 	log.Debugf("Reading Token from [%s]", path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("No Session Token could be found, please login")
 	}
 
 	clientToken := internal{}
 
 	err = json.Unmarshal(data, &clientToken)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Corrupted Session Token, please login")
 	}
 
 	client := &Client{

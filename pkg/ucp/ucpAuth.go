@@ -441,19 +441,19 @@ func (c *Client) GetAccounts(query Account, count int) (*AccountList, error) {
 	}
 
 	if query.IsAdmin == true {
-		log.Debugln("Retrieving Organisations")
+		log.Debugln("Retrieving Admins")
 		url = url + "&filter=admins"
 	}
 
 	if query.IsActive == false {
-		log.Debugln("Retrieving Organisations")
+		log.Debugln("Retrieving InActive users")
 		url = url + "&filter=inactive"
 	}
 
 	log.Debugf("Built URL [%s]", url)
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error retrieving Accounts")
+		return nil, fmt.Errorf("%s", string(response))
 	}
 
 	var a AccountList

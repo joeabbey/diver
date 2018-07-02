@@ -171,7 +171,7 @@ func (c *Client) GetGrants(resolve bool) error {
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s", response)
 	}
 
 	type subjects struct {
@@ -194,6 +194,9 @@ func (c *Client) GetGrants(resolve bool) error {
 			return err
 		}
 		collections, err = c.returnAllCollections()
+		if err != nil {
+			return err
+		}
 	}
 
 	err = json.Unmarshal(response, &grants)
@@ -250,6 +253,7 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 
 	_, err := c.putRequest(url, nil)
 	if err != nil {
+
 		return err
 	}
 

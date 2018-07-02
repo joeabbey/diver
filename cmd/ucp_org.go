@@ -201,13 +201,12 @@ var ucpAuthOrgList = &cobra.Command{
 		accountQuery.IsOrg = true
 
 		orgs, err := client.GetAccounts(accountQuery, 1000)
-
 		if err != nil {
-			err = ucp.ParseUCPError([]byte(err.Error()))
-			if err != nil {
-				log.Errorf("Error parsing UCP error: %v", err)
+			parseerr := ucp.ParseUCPError([]byte(err.Error()))
+			if parseerr != nil {
+				log.Debugf("Error parsing error")
 			}
-			log.Fatalf("%v", err)
+			return
 		}
 
 		if len(orgs.Accounts) == 0 {
@@ -293,11 +292,12 @@ var ucpAuthUsersList = &cobra.Command{
 		}
 		users, err = client.GetAccounts(accountQuery, 1000)
 		if err != nil {
-			err = ucp.ParseUCPError([]byte(err.Error()))
-			if err != nil {
-				log.Errorf("Error parsing UCP error: %v", err)
+			parsererr := ucp.ParseUCPError([]byte(err.Error()))
+			if parsererr != nil {
+				log.Errorf("Error parsing UCP error: %v", parsererr)
+				log.Debugf("Response %v", err)
 			}
-			log.Fatalf("%v", err)
+			return
 		}
 
 		if len(users.Accounts) == 0 {
@@ -418,7 +418,12 @@ var ucpAuthGrantsList = &cobra.Command{
 		}
 		err = client.GetGrants(resolve)
 		if err != nil {
-			log.Fatalf("%v", err)
+			parsererr := ucp.ParseUCPError([]byte(err.Error()))
+			if parsererr != nil {
+				log.Errorf("Error parsing UCP error: %v", parsererr)
+				log.Debugf("Response %v", err)
+			}
+			return
 		}
 	},
 }
