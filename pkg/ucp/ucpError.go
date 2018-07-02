@@ -20,6 +20,7 @@ type errorEntry struct {
 func ParseUCPError(response []byte) error {
 	e := errorResponse{}
 	r := errorEntry{}
+
 	// TODO
 	// Assuming that all main UCP calls will respond using the above JSON structure (could fail silently if that isn't the case)
 	err := json.Unmarshal(response, &e)

@@ -453,7 +453,7 @@ func (c *Client) GetAccounts(query Account, count int) (*AccountList, error) {
 	log.Debugf("Built URL [%s]", url)
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return nil, response
+		return nil, fmt.Errorf("%s", string(response))
 	}
 
 	var a AccountList

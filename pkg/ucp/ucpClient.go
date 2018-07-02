@@ -120,7 +120,7 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		return nil, err
+		return bytes, err
 	}
 	return bytes, nil
 }
@@ -283,7 +283,7 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	case 401:
 		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 		// Return Body, can be processed with ucp.ParseURL elsewhere
-		return nil, fmt.Errorf("%s", body)
+		return body, fmt.Errorf("401")
 	case 404:
 		log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
 		// Return Body, can be processed with ucp.ParseURL elsewhere
