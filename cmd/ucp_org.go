@@ -7,9 +7,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/thebsdbox/diver/pkg/ucp"
+	"github.com/thebsdbox/diver/pkg/ucp/types"
 )
 
-var auth ucp.Account
+var auth ucptypes.Account
 var name, ruleset, collection, collectionType string
 var admin, inactive, resolve bool
 
@@ -197,7 +198,7 @@ var ucpAuthOrgList = &cobra.Command{
 		}
 
 		//orgs, err := client.GetAllOrgs()
-		var accountQuery ucp.Account
+		var accountQuery ucptypes.Account
 		accountQuery.IsOrg = true
 
 		orgs, err := client.GetAccounts(accountQuery, 1000)
@@ -281,8 +282,8 @@ var ucpAuthUsersList = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		var users *ucp.AccountList
-		var accountQuery ucp.Account
+		var users *ucptypes.AccountList
+		var accountQuery ucptypes.Account
 		accountQuery.IsOrg = false
 		if admin {
 			accountQuery.IsAdmin = true
@@ -472,11 +473,11 @@ var ucpAuthGrantsSet = &cobra.Command{
 		var grantFlag uint
 		switch collectionType {
 		case "collection":
-			grantFlag = ucp.GrantCollection
+			grantFlag = ucptypes.GrantCollection
 		case "namespace":
-			grantFlag = ucp.GrantNamespace
+			grantFlag = ucptypes.GrantNamespace
 		case "all":
-			grantFlag = ucp.GrantObject
+			grantFlag = ucptypes.GrantObject
 		default:
 			cmd.Help()
 			log.Fatalf("Unknown Grant type [%s]", collectionType)

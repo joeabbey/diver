@@ -5,57 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-)
-
-type roles struct {
-	ID          string          `json:"id"`
-	Name        string          `json:"name"`
-	ServiceRole bool            `json:"servicerole"`
-	Operations  json.RawMessage // Captures the raw output of the remaining json object
-}
-
-// TODO fix the rest of the struct
-type collection struct {
-	// "name": "Private",
-	// "path": "/Shared/Private",
-	// "id": "private",
-	// "parent_ids": [
-	//   "root",
-	//   "swarm",
-	//   "shared"
-	// ],
-	// "label_constraints": [],
-	// "legacylabelkey": "",
-	// "legacylabelvalue": "",
-	// "created_at": "2018-06-11T17:16:14.124Z",
-	// "updated_at": "2018-06-11T17:16:14.124Z"
-	Name string `json:"name"`
-	Path string `json:"path"`
-	ID   string `json:"id"`
-}
-
-// A grant is based upon three keys:
-// -- ObjectID == Collection
-// -- RoleID == Links the role that is applied (rights)
-// -- SubjectID == User that has is linked to the collection with the appropriate rights
-
-type grant struct {
-	ObjectID  string `json:"objectID"`
-	RoleID    string `json:"roleID"`
-	SubjectID string `json:"subjectID"`
-}
-
-//collection’, 'namespace’, or 'grantobject
-
-const (
-	// GrantCollection - (default) specifies a grant is created against a collection
-	GrantCollection uint = 1 << iota
-
-	// GrantNamespace - A grant is made against a namespace (kubernetes)
-	GrantNamespace
-
-	// GrantObject - kubernetesnamespaces target, which is used to give grants against all Kubernetes namespaces.
-	GrantObject
+	"github.com/thebsdbox/diver/pkg/ucp/types"
 )
 
 //GetOrg - TODO
@@ -64,7 +14,7 @@ func (c *Client) GetOrg(orgName string) error {
 	return nil
 }
 
-func (c *Client) returnAllRoles() ([]roles, error) {
+func (c *Client) returnAllRoles() ([]ucptypes.Roles, error) {
 
 	url := fmt.Sprintf("%s/roles", c.UCPURL)
 
@@ -73,7 +23,7 @@ func (c *Client) returnAllRoles() ([]roles, error) {
 		return nil, err
 	}
 
-	var r []roles
+	var r []ucptypes.Roles
 
 	log.Debugf("Parsing all roles")
 	err = json.Unmarshal(response, &r)
@@ -121,7 +71,7 @@ func (c *Client) CreateRole(name, id, ruleset string, serviceAccount bool) error
 
 	url := fmt.Sprintf("%s/roles", c.UCPURL)
 
-	newrole := roles{
+	newrole := ucptypes.Roles{
 		ID:          id,
 		Name:        name,
 		ServiceRole: serviceAccount,
@@ -144,7 +94,7 @@ func (c *Client) CreateRole(name, id, ruleset string, serviceAccount bool) error
 	return nil
 }
 
-func (c *Client) returnAllCollections() ([]collection, error) {
+func (c *Client) returnAllCollections() ([]ucptypes.Collection, error) {
 
 	url := fmt.Sprintf("%s/collections?limit=1000", c.UCPURL)
 
@@ -153,7 +103,7 @@ func (c *Client) returnAllCollections() ([]collection, error) {
 		return nil, err
 	}
 
-	var collections []collection
+	var collections []ucptypes.Collection
 
 	log.Debugf("Parsing all collections")
 	err = json.Unmarshal(response, &collections)
@@ -175,18 +125,18 @@ func (c *Client) GetGrants(resolve bool) error {
 	}
 
 	type subjects struct {
-		ID             string  `json:"id"`
-		Type           string  `json:"subject_type"`
-		SubjectAccount Account `json:"account"`
+		ID             string           `json:"id"`
+		Type           string           `json:"subject_type"`
+		SubjectAccount ucptypes.Account `json:"account"`
 	}
 
 	var grants struct {
-		Grants   []grant    `json:"grants"`
-		Subjects []subjects `json:"subjects"`
+		Grants   []ucptypes.Grant `json:"grants"`
+		Subjects []subjects       `json:"subjects"`
 	}
 
-	var r []roles
-	var collections []collection
+	var r []ucptypes.Roles
+	var collections []ucptypes.Collection
 	// If resolving cache the roles, and collections before hand (speed up the resolution process)
 	if resolve {
 		r, err = c.returnAllRoles()
@@ -238,11 +188,11 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 	// Parser flags
 	var grantType string
 	switch flags {
-	case (GrantCollection):
+	case (ucptypes.GrantCollection):
 		grantType = "collection"
-	case (GrantNamespace):
+	case (ucptypes.GrantNamespace):
 		grantType = "namespace"
-	case (GrantObject):
+	case (ucptypes.GrantObject):
 		grantType = "grantobject"
 	default:
 		return fmt.Errorf("Unknown Grant Type")
