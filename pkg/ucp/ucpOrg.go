@@ -50,20 +50,33 @@ func (c *Client) GetRoles() error {
 }
 
 //GetRoleRuleset - This will return a list of rules attached to a role
-func (c *Client) GetRoleRuleset(role string) (string, error) {
+func (c *Client) GetRoleRuleset(role string, id string) (string, error) {
 
 	r, err := c.returnAllRoles()
 	if err != nil {
 		return "", err
 	}
 
-	for i := range r {
-		if role == r[i].Name {
-			return string(r[i].Operations), nil
+	if role != "" {
+		for i := range r {
+			if role == r[i].Name {
+				return string(r[i].Operations), nil
+			}
 		}
-
 	}
-	return "", fmt.Errorf("Unable to find role [%s]", role)
+
+	if id != "" {
+		for i := range r {
+			if id == r[i].ID {
+				return string(r[i].Operations), nil
+			}
+		}
+	}
+	if role != "" {
+		return "", fmt.Errorf("Unable to find role [%s]", role)
+	}
+	return "", fmt.Errorf("Unable to find ID [%s]", id)
+
 }
 
 //CreateRole - This set the role of a user in an organisation

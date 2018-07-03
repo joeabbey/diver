@@ -43,7 +43,8 @@ func init() {
 	ucpAuthUsersList.Flags().BoolVar(&inactive, "inactive", false, "Retrieve *only* inactive users")
 	ucpAuthUsersList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
-	ucpAuthRolesGet.Flags().StringVar(&name, "rolename", "", "Name of the role retrieve")
+	ucpAuthRolesGet.Flags().StringVar(&name, "rolename", "", "Name of the role to retrieve")
+	ucpAuthRolesGet.Flags().StringVar(&id, "id", "", "ID of the role to retrieve")
 	ucpAuthRolesCreate.Flags().StringVar(&name, "rolename", "", "Name of the role to create")
 	ucpAuthRolesCreate.Flags().StringVar(&ruleset, "ruleset", "", "Path to a ruleset (JSON) to be used")
 	ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a service account")
@@ -355,7 +356,7 @@ var ucpAuthRolesGet = &cobra.Command{
 	Short: "List all rules for a particular role",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
-		if name == "" {
+		if name == "" && id == "" {
 			cmd.Help()
 			log.Fatalln("No role specified to download")
 		}
@@ -363,7 +364,7 @@ var ucpAuthRolesGet = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		rules, err := client.GetRoleRuleset(name)
+		rules, err := client.GetRoleRuleset(name, id)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -436,13 +437,13 @@ var ucpAuthGrantsGet = &cobra.Command{
 		log.SetLevel(log.Level(logLevel))
 		if name == "" {
 			cmd.Help()
-			log.Fatalln("No role specified to download")
+			log.Fatalln("No role name specified to download")
 		}
 		client, err := ucp.ReadToken()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		rules, err := client.GetRoleRuleset(name)
+		rules, err := client.GetRoleRuleset(name, id)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
