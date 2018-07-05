@@ -56,6 +56,9 @@ func init() {
 
 	// TODO - UCP TEAMS
 	ucpAuth.AddCommand(ucpAuthTeams)
+	ucpAuthTeams.AddCommand(ucpAuthTeamList)
+	ucpAuthTeamList.Flags().StringVar(&name, "org", "", "Name of the organisation to query for teams")
+	ucpAuthTeamList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	// UCP ROLES
 	ucpAuth.AddCommand(ucpAuthRoles)
@@ -103,17 +106,17 @@ var ucpAuth = &cobra.Command{
 		}
 		// A file has been passed in, so parse it and return
 		if importPath != "" {
-			log.Info("Importing Accounts from file")
+			log.Info("Importing Accounts from CSV file")
 			client, err := ucp.ReadToken()
 			if err != nil {
 				// Fatal error if can't read the token
 				log.Fatalf("%v", err)
 			}
-			log.Debugf("Started parsing [%s]", importPath)
 			err = client.ImportAccountsFromCSV(importPath)
 			if err != nil {
 				log.Fatalf("%v", err)
 			}
+			log.Info("Import succesfull")
 			return
 		}
 
@@ -322,6 +325,27 @@ var ucpAuthTeams = &cobra.Command{
 	Short: "Manage Docker EE Teams",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
+	},
+}
+
+var ucpAuthTeamList = &cobra.Command{
+	Use:   "list",
+	Short: "List Docker EE Teams",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		if name == "" {
+			log.Fatalf("No Organisation Specified")
+		}
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		err = client.GetTeams(name)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 	},
 }
 

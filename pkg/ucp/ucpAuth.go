@@ -235,11 +235,17 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 
 	var accounts []ucptypes.Account
 
-	var action []int8 // 0 = create, 1 = delete, 2 = update
+	var action []int8 // 0 = create, 1 = delete, 2 = update, 3 = ignore
 
 	// Parsing from a CSV to a GO struct is a bit messy, using the ParseBool method
 	log.Infof("Parsing CSV file [%s]", path)
 	for _, line := range csvLines {
+
+		// Check for Header line
+		if line[1] == "Full Name" && line[2] == "Active account" {
+			log.Debugf("Ignoring Header")
+			continue
+		}
 
 		// Parse the action
 		switch line[0] {
@@ -252,6 +258,9 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 		case "update":
 			log.Debug("Updating an existing account")
 			action = append(action, 2)
+		case "ignore":
+			log.Debugf("Ignoring the account [%s]", line[5])
+			action = append(action, 3)
 		default:
 			return fmt.Errorf("Unknown action [%s] on account", line[0])
 		}
@@ -308,6 +317,8 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 			c.DeleteAccount(accounts[i].Name)
 		case 2:
 			log.Warnf("Not implemented yet") //TODO
+		case 3:
+			// Account is ignored
 		default:
 			return fmt.Errorf("Unknown action being performed on user [%s]", accounts[i].FullName)
 		}
@@ -319,18 +330,10 @@ func (c *Client) ImportAccountsFromCSV(path string) error {
 //ExportAccountsToCSV -
 func (c *Client) ExportAccountsToCSV(path string) error {
 
-	log.Infof("Retrieving Accounts from UCP")
-	// Build the URL (TODO set limit)
-	url := fmt.Sprintf("%s/accounts/?filter=all&limit=1000", c.UCPURL)
+	// Default Query
+	var accountQuery ucptypes.Account
 
-	response, err := c.getRequest(url, nil)
-	if err != nil {
-		return err
-	}
-
-	var a ucptypes.AccountList
-
-	err = json.Unmarshal(response, &a)
+	a, err := c.GetAccounts(accountQuery, -1)
 	if err != nil {
 		return err
 	}
@@ -344,15 +347,29 @@ func (c *Client) ExportAccountsToCSV(path string) error {
 	writer := csv.NewWriter(csvFile)
 	defer writer.Flush()
 
+	// Write a header to the top of the CSV making it easier to understand
+	var csvHeader = []string{
+		"Action",
+		"Full Name",
+		"Active account",
+		"Administrative User",
+		"Is Organisation",
+		"ID",
+		"Password",
+		"LDAP User"}
+	writer.Write(csvHeader)
+
 	for _, acct := range a.Accounts {
-		var csvString = []string{acct.FullName,
+		var csvRow = []string{
+			"ignore", // this will step over the account when parsing the CSV
+			acct.FullName,
 			strconv.FormatBool(acct.IsActive),
 			strconv.FormatBool(acct.IsAdmin),
 			strconv.FormatBool(acct.IsOrg),
 			acct.Name,
 			acct.Password,
 			strconv.FormatBool(acct.SearchLDAP)}
-		writer.Write(csvString)
+		writer.Write(csvRow)
 	}
 	return nil
 }

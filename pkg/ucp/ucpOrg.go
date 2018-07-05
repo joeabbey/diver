@@ -33,7 +33,43 @@ func (c *Client) returnAllRoles() ([]ucptypes.Roles, error) {
 	return r, nil
 }
 
-//GetRoles - This will return a list of services
+func (c *Client) returnAllTeamsFromOrg(org string) (*ucptypes.Teams, error) {
+
+	url := fmt.Sprintf("%s/accounts/%s/teams?limit=10", c.UCPURL, org)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var t ucptypes.Teams
+
+	log.Debugf("Parsing team JSON")
+	err = json.Unmarshal(response, &t)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+//GetTeams - This will print a list of teams
+func (c *Client) GetTeams(org string) error {
+	t, err := c.returnAllTeamsFromOrg(org)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Found %d teams for organisation %s", len(t.Teams), org)
+	fmt.Printf("OrgID\t\tName\tID\tDescription\tMember Count\n")
+
+	for i := range t.Teams {
+		fmt.Printf("%s\t%s\t%s\t%s\t%d\n", t.Teams[i].OrgID, t.Teams[i].Name, t.Teams[i].ID, t.Teams[i].Description, t.Teams[i].MembersCount)
+	}
+
+	return nil
+}
+
+//GetRoles - This will print a list of services
 func (c *Client) GetRoles() error {
 
 	r, err := c.returnAllRoles()
