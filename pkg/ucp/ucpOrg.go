@@ -8,12 +8,6 @@ import (
 	"github.com/thebsdbox/diver/pkg/ucp/types"
 )
 
-//GetOrg - TODO
-func (c *Client) GetOrg(orgName string) error {
-	log.Debugf("Searching for Org [%s]", orgName)
-	return nil
-}
-
 func (c *Client) returnAllRoles() ([]ucptypes.Roles, error) {
 
 	url := fmt.Sprintf("%s/roles", c.UCPURL)
@@ -60,6 +54,7 @@ func (c *Client) GetTeams(org string) error {
 	}
 
 	log.Debugf("Found %d teams for organisation %s", len(t.Teams), org)
+
 	fmt.Printf("OrgID\t\tName\tID\tDescription\tMember Count\n")
 
 	for i := range t.Teams {
