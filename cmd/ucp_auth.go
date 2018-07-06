@@ -23,7 +23,7 @@ func init() {
 
 var ucpAuth = &cobra.Command{
 	Use:   "auth",
-	Short: "Authorisation commands for users, groups and teams",
+	Short: "Authorisation commands for users/orgs/teams, roles and grants",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 		if exampleFile == true {
