@@ -21,6 +21,8 @@ func init() {
 	dtrLogin.Flags().BoolVar(&dtrClient.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
 	dtrCmd.AddCommand(dtrLogin)
+	dtrCmd.AddCommand(dtrInfo)
+	dtrInfo.AddCommand(dtrLoginReplicas)
 	diverCmd.AddCommand(dtrCmd)
 
 }
@@ -49,6 +51,32 @@ var dtrLogin = &cobra.Command{
 				log.Errorf("%v", err)
 			}
 			log.Infof("Succesfully logged into [%s]", dtrClient.DTRURL)
+		}
+	},
+}
+
+var dtrInfo = &cobra.Command{
+	Use:   "info",
+	Short: "Information about Docker Trusted Registry",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
+}
+
+var dtrLoginReplicas = &cobra.Command{
+	Use:   "replicas",
+	Short: "Docker Trusted Registry Replicase",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := dtr.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.ListReplicas()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
 		}
 	},
 }

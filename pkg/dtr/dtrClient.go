@@ -113,10 +113,10 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// Add authorisation token to HTTP header
-	if len(c.Token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	}
+	// // Add authorisation token to HTTP header
+	// if len(c.Token) != 0 {
+	// 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	// }
 
 	req.Header.Add("Content-Type", "application/json")
 
