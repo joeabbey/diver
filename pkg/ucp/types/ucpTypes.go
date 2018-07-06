@@ -21,10 +21,21 @@ type AccountList struct {
 
 // Team - is the structure for defining a team
 type Team struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
+	Description  string `json:"description"`
+	ID           string `json:"id"`
+	MembersCount int    `json:"membersCount"`
+	Name         string `json:"name"`
+	OrgID        string `json:"orgID"`
 }
 
+// Teams is returned from querying an organisation
+type Teams struct {
+	NextPage      string `json:"nextPageStart"`
+	ResourceCount int    `json:"resourceCount"`
+	Teams         []Team `json:"teams"`
+}
+
+// Roles are the structure the defines a role
 type Roles struct {
 	ID          string          `json:"id"`
 	Name        string          `json:"name"`
@@ -32,7 +43,7 @@ type Roles struct {
 	Operations  json.RawMessage // Captures the raw output of the remaining json object
 }
 
-// TODO fix the rest of the struct
+// Collection - TODO
 type Collection struct {
 	// "name": "Private",
 	// "path": "/Shared/Private",
@@ -57,6 +68,7 @@ type Collection struct {
 // -- RoleID == Links the role that is applied (rights)
 // -- SubjectID == User that has is linked to the collection with the appropriate rights
 
+// Grant - the the three elements needed for a grant
 type Grant struct {
 	ObjectID  string `json:"objectID"`
 	RoleID    string `json:"roleID"`
