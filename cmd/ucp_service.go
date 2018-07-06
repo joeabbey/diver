@@ -24,15 +24,10 @@ func init() {
 	ucpService.Flags().BoolVar(&svc.Node, "node", false, "Display Node running task")
 	ucpService.Flags().BoolVar(&svc.Resolve, "resolve", false, "Resolve Task IDs to human readable names")
 
-	// Set logging
-	ucpService.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
 	// Service Reap flags
 	ucpServiceReap.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
-	ucpServiceReap.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 
 	// Service Architecture flags
-	ucpServiceArchitecture.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpServiceArchitecture.Flags().BoolVar(&prevSpec, "previousSpec", false, "Display the previous Service specification")
 
 	// Add Service to UCP root commands

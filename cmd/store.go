@@ -13,7 +13,6 @@ import (
 var storeClient store.Client
 var id string
 var firstActive bool
-var logLevel = 5
 
 func init() {
 	storeCmd.Flags().StringVar(&storeClient.Username, "username", os.Getenv("STORE_USERNAME"), "Username that has permissions to authenticate to Docker EE")
@@ -25,12 +24,9 @@ func init() {
 
 	storeCmd.Flags().BoolVar(&storeClient.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
-	storeCmd.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
-	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Docker Store ID, by default will take the ID from ~/.dockerstore")
+	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Docker Store ID, by default will take the ID from ~/.storetoken")
 	storeSubscriptionsList.Flags().BoolVar(&firstActive, "firstactive", false, "Retrieve first active subscription")
 
-	storeSubscriptionsList.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	storeUser.Flags().StringVar(&id, "user", "", "Retrieve information about a specified user")
 
 	storeLicensesGet.Flags().StringVar(&id, "subscription", "", "Set which subscription to retrieve the license")

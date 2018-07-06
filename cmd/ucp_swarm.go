@@ -17,10 +17,8 @@ var raftHB, raftET int
 
 func init() {
 
-	ucpSwarm.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpSwarm.Flags().BoolVar(&swarmVersionInfo, "version", false, "Get the current Swarm cluster version Number")
 
-	ucpSwarmRaft.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpSwarmRaftSetInfo.Flags().IntVar(&raftHB, "heartbeat", -1, "Set the Raft Heartbeat")
 	ucpSwarmRaftSetInfo.Flags().IntVar(&raftET, "electiontick", -1, "Set the Raft Election Tick")
 	ucpSwarmRaftSetInfo.Flags().StringVar(&swarmVersion, "version", "", "Set the version of the Raft Cluster to update")
