@@ -31,6 +31,33 @@ Flags:
 Use "diver [command] --help" for more information about a command.
 ```
 
+## *STATUS*
+
+**UCP**
+- Login
+- Query/Create/Delete Users
+- Query/Create/Delete Organisations
+- Get/Set Swarm
+- Download client bundle
+- Clone and set Roles
+- Set Grants from subject, role, object
+
+.. More coming
+
+**DTR**
+- Login
+- List Replicas and health
+
+.. More coming
+
+**STORE**
+- Login
+- Retrieve Subscriptions
+- Find recent active
+- Download licenses
+
+## UCP
+
 ### Logging in to UCP
 
 ```
@@ -136,6 +163,43 @@ Download the client bundle to your local machine.
 INFO[0000] Downloading the UCP Client Bundle            
 ```
 
+
+### Watching Containers
+
+This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
+
+
+```
+./diver ucp containers top
+```
+
+![](img/container-top.jpg)
+
+## DTR
+
+### Logging into DTR
+
+```
+./diver dtr login --username docker               \
+                  --password password             \
+                  --url https://docker02.fnnrn.me \
+                  --ignorecert
+INFO[0000] Succesfully logged into [https://docker02.fnnrn.me] 
+```
+
+
+### List Replicas
+
+```
+./diver dtr info replicas
+
+Replica         Status
+a3a8ab213a8b     OK
+ecb7a768afc4     OK
+```
+
+## Docker Store
+
 ### Interacting with Docker Store
 
 Logging into the Docker Store through the following command:
@@ -163,17 +227,6 @@ This will print the raw output so it is advisable to pipe this to a file with th
 
 `> ./subscription_ID.lic`
 
-### Watching Containers
-
-This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
-
-
-```
-./diver ucp containers top
-```
-
-![](img/container-top.jpg)
-
-### Debugging Issues
+## Debugging Issues
 
 When errors are reported turn up the `--logLevel` to 5, which enables debugging output.
