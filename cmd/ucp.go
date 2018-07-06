@@ -27,8 +27,6 @@ func init() {
 
 	ucpLogin.Flags().BoolVar(&ucpClient.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
-	ucpLogin.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
 	// Container flags
 	ucpContainer.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
 	ucpContainer.Flags().BoolVar(&top, "top", false, "Enable TOP for watching running containers")

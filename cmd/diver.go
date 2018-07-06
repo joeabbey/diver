@@ -12,7 +12,14 @@ var diverCmd = &cobra.Command{
 	Short: "This tool uses the native APIs to \"dive\" into Docker EE",
 }
 
-// Execute -
+var logLevel int
+
+func init() {
+	// Global flag across all subcommands
+	diverCmd.PersistentFlags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
+}
+
+// Execute - starts the command parsing process
 func Execute() {
 	if err := diverCmd.Execute(); err != nil {
 		fmt.Println(err)

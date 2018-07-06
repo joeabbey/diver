@@ -14,9 +14,6 @@ func init() {
 	ucpBuild.Flags().StringVar(&bld.Tag, "tag", "", "Docker tags to apply to the image")
 	//ucpBuild.Flags().StringVar(&bld.BuildHost, "buildhost", "", "Docker engine where Image will be built")
 
-	// Set logging
-	ucpBuild.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-
 	// Add Service to UCP root commands
 	UCPRoot.AddCommand(ucpBuild)
 
