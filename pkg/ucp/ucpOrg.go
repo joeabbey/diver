@@ -3,6 +3,8 @@ package ucp
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/thebsdbox/diver/pkg/ucp/types"
@@ -55,12 +57,14 @@ func (c *Client) GetTeams(org string) error {
 
 	log.Debugf("Found %d teams for organisation %s", len(t.Teams), org)
 
-	fmt.Printf("OrgID\t\tName\tID\tDescription\tMember Count\n")
+	const padding = 3
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+	fmt.Fprintln(w, "Name\tID\tOrganisation\tDescription\tMember Count")
 
 	for i := range t.Teams {
-		fmt.Printf("%s\t%s\t%s\t%s\t%d\n", t.Teams[i].OrgID, t.Teams[i].Name, t.Teams[i].ID, t.Teams[i].Description, t.Teams[i].MembersCount)
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\n", t.Teams[i].Name, t.Teams[i].ID, t.Teams[i].OrgID, t.Teams[i].Description, t.Teams[i].MembersCount)
 	}
-
+	w.Flush()
 	return nil
 }
 
@@ -72,11 +76,15 @@ func (c *Client) GetRoles() error {
 		return err
 	}
 
-	fmt.Printf("ID\t\tService Account\tName\n")
+	const padding = 3
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+	fmt.Fprintln(w, "Name\tID\tService Account")
 
 	for i := range r {
-		fmt.Printf("%s\t%t\t%s\n", r[i].ID, r[i].ServiceRole, r[i].Name)
+		fmt.Fprintf(w, "%s\t%s\t%t\n", r[i].Name, r[i].ID, r[i].ServiceRole)
 	}
+	w.Flush()
+
 	return nil
 }
 
@@ -194,6 +202,12 @@ func (c *Client) GetGrants(resolve bool) error {
 	}
 
 	err = json.Unmarshal(response, &grants)
+	if err != nil {
+		return err
+	}
+	const padding = 3
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+	fmt.Fprintln(w, "Subject\tRole\tCollection")
 	for i := range grants.Grants {
 
 		subject := grants.Grants[i].SubjectID
@@ -217,12 +231,9 @@ func (c *Client) GetGrants(resolve bool) error {
 				}
 			}
 		}
-
-		fmt.Printf("%s\t\t%s\t\t%s\n", subject, role, object)
-
+		fmt.Fprintf(w, "%s\t%s\t%s\n", subject, role, object)
 	}
-
-	log.Debugf("%v", grants.Subjects)
+	w.Flush()
 	return nil
 }
 

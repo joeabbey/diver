@@ -421,7 +421,6 @@ func CreateExampleAccountCSV() error {
 // GetAccounts - This will get all accounts
 func (c *Client) GetAccounts(query ucptypes.Account, count int) (*ucptypes.AccountList, error) {
 
-	log.Infof("Retrieving Accounts from UCP")
 	// Build the URL (TODO set limit)
 	var url string
 	if count > 0 {
@@ -440,7 +439,7 @@ func (c *Client) GetAccounts(query ucptypes.Account, count int) (*ucptypes.Accou
 		url = url + "&filter=admins"
 	}
 
-	if query.IsActive == false {
+	if query.IsActive == true {
 		log.Debugln("Retrieving InActive users")
 		url = url + "&filter=inactive"
 	}
