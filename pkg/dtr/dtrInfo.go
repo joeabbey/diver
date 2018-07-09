@@ -3,6 +3,8 @@ package dtr
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/thebsdbox/diver/pkg/dtr/types"
 )
@@ -33,10 +35,15 @@ func (c *Client) ListReplicas() error {
 	}
 
 	replicas := cluster.ReplicaHealth
-	fmt.Printf("Replica\t \tStatus\n")
+
+	const padding = 3
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+	fmt.Fprintln(w, "Replica\tStatus")
 
 	for replica, status := range replicas {
-		fmt.Printf("%s\t %s\n", replica, status)
+		fmt.Fprintf(w, "%s\t%s\n", replica, status)
 	}
+	w.Flush()
+
 	return nil
 }

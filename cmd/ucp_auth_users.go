@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -97,7 +99,7 @@ var ucpAuthUsersList = &cobra.Command{
 			accountQuery.IsAdmin = true
 		}
 		if inactive {
-			accountQuery.IsActive = false
+			accountQuery.IsActive = true
 		}
 		users, err = client.GetAccounts(accountQuery, 1000)
 		if err != nil {
@@ -113,14 +115,16 @@ var ucpAuthUsersList = &cobra.Command{
 			log.Error("No accounts returned")
 			return
 		}
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
 		log.Debugf("Found %d Accounts", len(users.Accounts))
-		fmt.Printf("User Name\tID\tFullname\t\n")
+		fmt.Fprintln(w, "User Name\tID\tFullname\t")
 		for _, acct := range users.Accounts {
 			// Not sure why we're still retrieving ORGs even though we said false above - TODO
 			if !acct.IsOrg {
-				fmt.Printf("%s\t%s\t%s\n", acct.Name, acct.ID, acct.FullName)
+				fmt.Fprintf(w, "%s\t%s\t%s\n", acct.Name, acct.ID, acct.FullName)
 			}
 		}
-
+		w.Flush()
 	},
 }
