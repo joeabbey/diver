@@ -4,7 +4,10 @@ This is a tool to interact with the APIs of the Docker Enterprise Edition produc
 
 ## Building
 
-Once the repo is cloned build with `make build`, or `make docker` to create a container locally that contains the binary.
+**QUICK USAGE** From your local machine `go get github.com/thebsdbox/diver`
+
+**Alternatively (or for dev work)**
+Clone the repository and build with `make build`, the `make docker` will a local `scratch `container that only has the binary.
 
 Alternatively you can manually compile `diver` through the use of `go build`.
 
