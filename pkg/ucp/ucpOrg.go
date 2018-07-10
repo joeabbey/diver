@@ -158,25 +158,6 @@ func (c *Client) CreateRole(name, id, ruleset string, systemRole bool) error {
 	return nil
 }
 
-func (c *Client) returnAllCollections() ([]ucptypes.Collection, error) {
-
-	url := fmt.Sprintf("%s/collections?limit=1000", c.UCPURL)
-
-	response, err := c.getRequest(url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var collections []ucptypes.Collection
-
-	log.Debugf("Parsing all collections")
-	err = json.Unmarshal(response, &collections)
-	if err != nil {
-		return nil, err
-	}
-	return collections, nil
-}
-
 //GetGrants - This will return a list of all grants, it can also resolve the UUIDs to names
 func (c *Client) GetGrants(resolve bool) error {
 
@@ -207,7 +188,7 @@ func (c *Client) GetGrants(resolve bool) error {
 		if err != nil {
 			return err
 		}
-		collections, err = c.returnAllCollections()
+		collections, err = c.GetCollections()
 		if err != nil {
 			return err
 		}
