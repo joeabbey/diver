@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -23,6 +25,8 @@ func init() {
 	ucpAuthRoles.AddCommand(ucpAuthRolesList)
 	ucpAuthRoles.AddCommand(ucpAuthRolesGet)
 	ucpAuthRoles.AddCommand(ucpAuthRolesCreate)
+	ucpAuthRoles.AddCommand(ucpAuthRolesTotal)
+
 }
 
 var ucpAuthRoles = &cobra.Command{
@@ -68,6 +72,29 @@ var ucpAuthRolesGet = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		fmt.Printf("%s", rules)
+	},
+}
+
+var ucpAuthRolesTotal = &cobra.Command{
+	Use:   "totalrole",
+	Short: "returns the TOTAL ruleset",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		rules, err := client.TotalRole()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		var prettyJSON bytes.Buffer
+		err = json.Indent(&prettyJSON, rules, "", "\t")
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		fmt.Printf("%s", prettyJSON.Bytes())
 	},
 }
 

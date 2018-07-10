@@ -48,6 +48,18 @@ func (c *Client) returnAllTeamsFromOrg(org string) (*ucptypes.Teams, error) {
 	return &t, nil
 }
 
+// TotalRole - This will return all roles available in the system
+func (c *Client) TotalRole() ([]byte, error) {
+
+	url := fmt.Sprintf("%s/totalRole", c.UCPURL)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
 //GetTeams - This will print a list of teams
 func (c *Client) GetTeams(org string) error {
 	t, err := c.returnAllTeamsFromOrg(org)

@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types/swarm"
@@ -15,14 +17,14 @@ var prevSpec bool
 
 func init() {
 	// Service flags
-	ucpService.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+	ucpServiceList.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
 	// Query options
-	ucpService.Flags().BoolVar(&svc.ID, "id", false, "Display task ID")
-	ucpService.Flags().BoolVar(&svc.Networks, "networks", false, "Display task Network connections")
-	ucpService.Flags().BoolVar(&svc.State, "state", false, "Display task state")
-	ucpService.Flags().BoolVar(&svc.Node, "node", false, "Display Node running task")
-	ucpService.Flags().BoolVar(&svc.Resolve, "resolve", false, "Resolve Task IDs to human readable names")
+	ucpServiceList.Flags().BoolVar(&svc.ID, "id", false, "Display task ID")
+	ucpServiceList.Flags().BoolVar(&svc.Networks, "networks", false, "Display task Network connections")
+	ucpServiceList.Flags().BoolVar(&svc.State, "state", false, "Display task state")
+	ucpServiceList.Flags().BoolVar(&svc.Node, "node", false, "Display Node running task")
+	ucpServiceList.Flags().BoolVar(&svc.Resolve, "resolve", false, "Resolve Task IDs to human readable names")
 
 	// Service Reap flags
 	ucpServiceReap.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
@@ -34,6 +36,7 @@ func init() {
 	UCPRoot.AddCommand(ucpService)
 
 	// Add reap to service subcommands
+	ucpService.AddCommand(ucpServiceList)
 	ucpService.AddCommand(ucpServiceReap)
 	ucpService.AddCommand(ucpServiceArchitecture)
 }
@@ -41,6 +44,15 @@ func init() {
 var ucpService = &cobra.Command{
 	Use:   "service",
 	Short: "Interact with services",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		cmd.Help()
+	},
+}
+
+var ucpServiceList = &cobra.Command{
+	Use:   "list",
+	Short: "List services",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 
@@ -68,7 +80,7 @@ var ucpService = &cobra.Command{
 
 var ucpServiceReap = &cobra.Command{
 	Use:   "reap",
-	Short: "Clean a service",
+	Short: "Clean a service (not implemented)",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 
@@ -122,51 +134,57 @@ var ucpServiceArchitecture = &cobra.Command{
 		} else {
 			spec = &service.Spec
 		}
-		fmt.Printf("ID:\t%s\n", service.ID)
-		fmt.Printf("Version:\t%d\n", service.Version.Index)
-		printServiceSpec(spec)
+
+		printServiceSpec(service, spec)
 	},
 }
 
 // This will read through the service spec and print out the details
-func printServiceSpec(spec *swarm.ServiceSpec) {
-	fmt.Printf("Name:\t%s\n", spec.Name)
-	fmt.Printf("Image:\t%s\n", spec.TaskTemplate.ContainerSpec.Image)
+func printServiceSpec(service *swarm.Service, spec *swarm.ServiceSpec) {
+	const padding = 3
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+
+	fmt.Fprintf(w, "ID:\t%s\n", service.ID)
+	fmt.Fprintf(w, "Version:\t%d\n", service.Version.Index)
+	fmt.Fprintf(w, "Name:\t%s\n", spec.Name)
+	fmt.Fprintf(w, "Image:\t%s\n", spec.TaskTemplate.ContainerSpec.Image)
 	//Print out the command used for the image
-	fmt.Printf("Cmd:")
+	fmt.Fprintf(w, "Cmd:")
 	for i := range spec.TaskTemplate.ContainerSpec.Command {
-		fmt.Printf(" %s", spec.TaskTemplate.ContainerSpec.Command[i])
+		fmt.Fprintf(w, " %s", spec.TaskTemplate.ContainerSpec.Command[i])
 	}
-	fmt.Printf("\n")
+	fmt.Fprintf(w, "\n")
 	// Print all arguments to the command
-	fmt.Printf("Args:")
+	fmt.Fprintf(w, "Args:")
 	for i := range spec.TaskTemplate.ContainerSpec.Args {
-		fmt.Printf(" %s", spec.TaskTemplate.ContainerSpec.Args[i])
+		fmt.Fprintf(w, " %s", spec.TaskTemplate.ContainerSpec.Args[i])
 	}
-	fmt.Printf("\n")
+	fmt.Fprintf(w, "\n")
 
 	// Print the labels from the key/map
-	fmt.Printf("Labels:\n")
+	fmt.Fprintf(w, "Labels:\n")
 	for key, value := range spec.TaskTemplate.ContainerSpec.Labels {
-		fmt.Printf("\t%s", key)
-		fmt.Printf("\t%s\n", value)
+		fmt.Fprintf(w, "\t%s", key)
+		fmt.Fprintf(w, "\t%s\n", value)
 	}
 
 	//Print reservations
 	if spec.TaskTemplate.Resources != nil {
-		fmt.Printf("Memory Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.MemoryBytes)
-		fmt.Printf("CPU Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.NanoCPUs)
+		fmt.Fprintf(w, "Memory Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.MemoryBytes)
+		fmt.Fprintf(w, "CPU Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.NanoCPUs)
 		//Print limits
-		fmt.Printf("Memory Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.MemoryBytes)
-		fmt.Printf("CPU Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.NanoCPUs)
+		fmt.Fprintf(w, "Memory Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.MemoryBytes)
+		fmt.Fprintf(w, "CPU Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.NanoCPUs)
 	}
 	// Check the pointer to the replica struct isn't nil and read replica count
 	if spec.Mode.Replicated != nil {
-		fmt.Printf("Replicas:\t%d\n", *spec.Mode.Replicated.Replicas)
+		fmt.Fprintf(w, "Replicas:\t%d\n", *spec.Mode.Replicated.Replicas)
 	}
 	if spec.Mode.Global != nil {
-		fmt.Printf("Global:\ttrue\n")
+		fmt.Fprintf(w, "Global:\ttrue\n")
 	}
+	w.Flush()
+
 }
 
 // {
