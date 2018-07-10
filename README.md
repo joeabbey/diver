@@ -40,10 +40,14 @@ Use "diver [command] --help" for more information about a command.
 - Login
 - Query/Create/Delete Users
 - Query/Create/Delete Organisations
+- Query/Create/Delete Teams
 - Get/Set Swarm
-- Download client bundle
 - Clone and set Roles
 - Set Grants from subject, role, object
+- Build Images from a local or Remote (github URL) Dockerfile
+- Download client bundle
+- Inspect Services (Endpoints coming soon)
+- Manage Swarm configuration
 
 .. More coming
 
