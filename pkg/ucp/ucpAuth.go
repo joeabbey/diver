@@ -203,6 +203,7 @@ func (c *Client) AddUserToTeam(user, org, team string) error {
 	// TODO - user can be an admin, but does he need to be a team admin (not sure what it does)
 	response, err := c.putRequest(url, []byte(`{}`))
 	if err != nil {
+		log.Debugf("%v", string(response))
 		err = ParseUCPError([]byte(err.Error()))
 		if err != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
@@ -211,6 +212,34 @@ func (c *Client) AddUserToTeam(user, org, team string) error {
 	}
 
 	log.Debugf("%v", string(response))
+
+	return nil
+}
+
+//DelUserFromTeam - deletes a user from a team in an existing organisation
+func (c *Client) DelUserFromTeam(user, org, team string) error {
+	log.Infof("Deleting user [%s] from team [%s] in organisation [%s]", user, team, org)
+
+	url := fmt.Sprintf("%s/accounts/%s/teams/%s/members/%s", c.UCPURL, org, team, user)
+
+	// TODO - user can be an admin, but does he need to be a team admin (not sure what it does)
+	response, err := c.delRequest(url, nil)
+	if err != nil {
+		if len(response) > 0 {
+			log.Debugf("%v", string(response))
+		} else {
+			return err
+		}
+		err = ParseUCPError([]byte(err.Error()))
+		if err != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
+		return err
+	}
+
+	if len(response) > 0 {
+		log.Debugf("%v", string(response))
+	}
 
 	return nil
 }

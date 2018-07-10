@@ -8,7 +8,7 @@ import (
 )
 
 var auth ucptypes.Account
-var name, ruleset, collection, collectionType string
+var name, org, user, ruleset, collection, collectionType, description string
 var admin, inactive, resolve bool
 
 func init() {
