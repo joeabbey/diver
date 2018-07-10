@@ -16,7 +16,7 @@ func init() {
 
 	ucpAuthRolesCreate.Flags().StringVar(&name, "rolename", "", "Name of the role to create")
 	ucpAuthRolesCreate.Flags().StringVar(&ruleset, "ruleset", "", "Path to a ruleset (JSON) to be used")
-	ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a service account")
+	ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a system role")
 
 	// UCP ROLES
 	ucpAuth.AddCommand(ucpAuthRoles)

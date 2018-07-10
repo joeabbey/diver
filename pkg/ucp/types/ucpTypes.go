@@ -37,10 +37,10 @@ type Teams struct {
 
 // Roles are the structure the defines a role
 type Roles struct {
-	ID          string          `json:"id"`
-	Name        string          `json:"name"`
-	ServiceRole bool            `json:"servicerole"`
-	Operations  json.RawMessage // Captures the raw output of the remaining json object
+	ID         string          `json:"id"`
+	Name       string          `json:"name"`
+	SystemRole bool            `json:"system_role"`
+	Operations json.RawMessage // Captures the raw output of the remaining json object
 }
 
 // Collection - TODO

@@ -177,6 +177,7 @@ func (c *Client) putRequest(url string, d []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Add("Content-Type", "application/json")
 
 	// Add authorisation token to HTTP header
 	if len(c.Token) != 0 {

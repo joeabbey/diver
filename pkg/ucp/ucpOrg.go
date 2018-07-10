@@ -81,7 +81,7 @@ func (c *Client) GetRoles() error {
 	fmt.Fprintln(w, "Name\tID\tService Account")
 
 	for i := range r {
-		fmt.Fprintf(w, "%s\t%s\t%t\n", r[i].Name, r[i].ID, r[i].ServiceRole)
+		fmt.Fprintf(w, "%s\t%s\t%t\n", r[i].Name, r[i].ID, r[i].SystemRole)
 	}
 	w.Flush()
 
@@ -119,15 +119,15 @@ func (c *Client) GetRoleRuleset(role string, id string) (string, error) {
 }
 
 //CreateRole - This set the role of a user in an organisation
-func (c *Client) CreateRole(name, id, ruleset string, serviceAccount bool) error {
+func (c *Client) CreateRole(name, id, ruleset string, systemRole bool) error {
 
 	url := fmt.Sprintf("%s/roles", c.UCPURL)
 
 	newrole := ucptypes.Roles{
-		ID:          id,
-		Name:        name,
-		ServiceRole: serviceAccount,
-		Operations:  json.RawMessage(ruleset),
+		ID:         id,
+		Name:       name,
+		SystemRole: systemRole,
+		Operations: json.RawMessage(ruleset),
 	}
 
 	b, err := json.Marshal(newrole)
