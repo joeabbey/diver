@@ -23,6 +23,8 @@ func init() {
 	ucpCollectionsCreate.Flags().StringVar(&name, "name", "", "Name of new collection")
 	ucpCollectionsCreate.Flags().StringVar(&parentID, "parent", "", "The ID of the parent collection")
 
+	ucpCollectionsDelete.Flags().StringVar(&name, "id", "", "ID of the collection to delete")
+
 	ucpCollectionsSet.Flags().StringVar(&name, "id", "", "The ID of the collection to update")
 
 	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelKey, "key", "", "The ID of the parent collection")
@@ -33,6 +35,8 @@ func init() {
 	ucpAuth.AddCommand(ucpCollections)
 
 	ucpCollections.AddCommand(ucpCollectionsCreate)
+	ucpCollections.AddCommand(ucpCollectionsDelete)
+
 	ucpCollections.AddCommand(ucpCollectionsList)
 	ucpCollections.AddCommand(ucpCollectionsGet)
 	ucpCollections.AddCommand(ucpCollectionsSet)
@@ -96,6 +100,29 @@ var ucpCollectionsCreate = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		log.Infof("Succesfully created collection [%s] in parent collection [%s]", name, parentID)
+	},
+}
+
+var ucpCollectionsDelete = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a Docker EE Collection",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalf("No collection ID specified")
+		}
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		err = client.DeleteCollection(name)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully delete collection [%s]", name)
+
 	},
 }
 

@@ -59,6 +59,21 @@ func (c *Client) CreateCollection(name, parentID string) error {
 	return nil
 }
 
+// DeleteCollection - This will get all accounts
+func (c *Client) DeleteCollection(collectionID string) error {
+	// Build the URL (TODO set limit)
+
+	url := fmt.Sprintf("%s/collections/%s", c.UCPURL, collectionID)
+
+	log.Debugf("Built URL [%s]", url)
+	_, err := c.delRequest(url, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetCollection - This will get all accounts
 func (c *Client) GetCollection(collectionID string) (*ucptypes.Collection, error) {
 	// Build the URL (TODO set limit)
