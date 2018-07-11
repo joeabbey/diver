@@ -13,6 +13,7 @@ import (
 )
 
 var newCollection ucptypes.Collection
+var newConstraint ucptypes.CollectionLabelConstraints
 var labelConstraints []string
 var parentID string
 
@@ -22,11 +23,19 @@ func init() {
 	ucpCollectionsCreate.Flags().StringVar(&name, "name", "", "Name of new collection")
 	ucpCollectionsCreate.Flags().StringVar(&parentID, "parent", "", "The ID of the parent collection")
 
+	ucpCollectionsSet.Flags().StringVar(&name, "id", "", "The ID of the collection to update")
+
+	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelKey, "key", "", "The ID of the parent collection")
+	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelValue, "value", "", "The ID of the parent collection")
+	ucpCollectionsSet.Flags().StringVar(&newConstraint.Type, "type", "", "Type is either a \"node\" or \"engine\" constraint")
+	ucpCollectionsSet.Flags().BoolVar(&newConstraint.Equality, "equals", true, "The constraint is that the key \"equals\" the value")
+
 	ucpAuth.AddCommand(ucpCollections)
 
 	ucpCollections.AddCommand(ucpCollectionsCreate)
 	ucpCollections.AddCommand(ucpCollectionsList)
 	ucpCollections.AddCommand(ucpCollectionsGet)
+	ucpCollections.AddCommand(ucpCollectionsSet)
 
 }
 
@@ -83,8 +92,10 @@ var ucpCollectionsCreate = &cobra.Command{
 		}
 		err = client.CreateCollection(name, parentID)
 		if err != nil {
+			log.Errorf("Unable to create collection [%s]", name)
 			log.Fatalf("%v", err)
 		}
+		log.Infof("Succesfully created collection [%s] in parent collection [%s]", name, parentID)
 	},
 }
 
@@ -125,5 +136,39 @@ var ucpCollectionsGet = &cobra.Command{
 			fmt.Fprintf(w, "\t%s\t%s\t%t\t%s\n", collection.LabelConstraints[i].LabelKey, collection.LabelConstraints[i].LabelValue, collection.LabelConstraints[i].Equality, collection.LabelConstraints[i].Type)
 		}
 		w.Flush()
+	},
+}
+
+var ucpCollectionsSet = &cobra.Command{
+	Use:   "set",
+	Short: "Set configuration details about a Docker EE Collection",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalf("No collection ID specified")
+		}
+		if newConstraint.LabelKey == "" {
+			cmd.Help()
+			log.Fatalf("No constraint key specified")
+		}
+		if newConstraint.LabelValue == "" {
+			cmd.Help()
+			log.Fatalf("No constraint value specified")
+		}
+		// Only two types currently exist as part of the collection types
+		if newConstraint.Type != "node" && newConstraint.Type != "engine" {
+			cmd.Help()
+			log.Fatalf("Unknown Constraint type [%s]", newConstraint.Type)
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		err = client.SetCollection(name, &newConstraint)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully updated collection [%s]", name)
 	},
 }

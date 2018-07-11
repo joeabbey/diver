@@ -73,18 +73,21 @@ const (
 
 // Collection - An array of JSON Structs that detail the collections in Docker UCP
 type Collection struct {
-	CreatedAt        time.Time `json:"created_at"`
-	ID               string    `json:"id"`
-	LabelConstraints []struct {
-		Equality   bool   `json:"equality"`
-		LabelKey   string `json:"label_key"`
-		LabelValue string `json:"label_value"`
-		Type       string `json:"type"`
-	} `json:"label_constraints"`
-	Legacylabelkey   string    `json:"legacylabelkey"`
-	Legacylabelvalue string    `json:"legacylabelvalue"`
-	Name             string    `json:"name"`
-	ParentIds        []string  `json:"parent_ids"`
-	Path             string    `json:"path"`
-	UpdatedAt        time.Time `json:"updated_at"`
+	CreatedAt        time.Time                    `json:"created_at"`
+	ID               string                       `json:"id"`
+	LabelConstraints []CollectionLabelConstraints `json:"label_constraints"`
+	Legacylabelkey   string                       `json:"legacylabelkey"`
+	Legacylabelvalue string                       `json:"legacylabelvalue"`
+	Name             string                       `json:"name"`
+	ParentIds        []string                     `json:"parent_ids"`
+	Path             string                       `json:"path"`
+	UpdatedAt        time.Time                    `json:"updated_at"`
+}
+
+// CollectionLabelConstraints - defines constraints to be applied to a collection
+type CollectionLabelConstraints struct {
+	Equality   bool   `json:"equality"`
+	LabelKey   string `json:"label_key"`
+	LabelValue string `json:"label_value"`
+	Type       string `json:"type"`
 }

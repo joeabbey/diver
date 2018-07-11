@@ -79,3 +79,39 @@ func (c *Client) GetCollection(collectionID string) (*ucptypes.Collection, error
 	}
 	return &foundCollection, nil
 }
+
+// SetCollection - This will get all accounts
+func (c *Client) SetCollection(collectionID string, constraint *ucptypes.CollectionLabelConstraints) error {
+
+	// Find the existing Collection
+	collection, err := c.GetCollection(collectionID)
+	if err != nil {
+		return err
+	}
+
+	// Create a temporary struct with the correct JSON schema
+	var patchedCollection struct {
+		LabelConstraints []ucptypes.CollectionLabelConstraints `json:"label_constraints"`
+	}
+
+	patchedCollection.LabelConstraints = collection.LabelConstraints
+	// add the new contraint to the existing ones
+	patchedCollection.LabelConstraints = append(patchedCollection.LabelConstraints, *constraint)
+
+	// Marshall the JSON to bytes
+	b, err := json.Marshal(patchedCollection)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("%s", b)
+
+	url := fmt.Sprintf("%s/collections/%s", c.UCPURL, collectionID)
+	log.Debugf("Built URL [%s]", url)
+
+	_, err = c.patchRequest(url, b)
+	if err != nil {
+		return err
+	}
+	return nil
+}
