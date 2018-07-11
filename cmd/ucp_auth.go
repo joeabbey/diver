@@ -13,9 +13,12 @@ var admin, inactive, resolve bool
 
 func init() {
 	// Auth flags
-	ucpAuth.Flags().StringVar(&importPath, "importCSV", "", "Import accounts from a file [csv currently supported]")
 	ucpAuth.Flags().StringVar(&exportPath, "exportCSV", "", "Export users to a file [csv currently supported]")
 	ucpAuth.Flags().BoolVar(&exampleFile, "exampleCSV", false, "Create an example csv file [example_accounts.csv]")
+
+	if !DiverRO {
+		ucpAuth.Flags().StringVar(&importPath, "importCSV", "", "Import accounts from a file [csv currently supported]")
+	}
 
 	// UCP ROOT
 	UCPRoot.AddCommand(ucpAuth)

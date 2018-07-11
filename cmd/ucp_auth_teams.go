@@ -29,11 +29,12 @@ func init() {
 	// UCP Team
 	ucpAuth.AddCommand(ucpAuthTeams)
 	ucpAuthTeams.AddCommand(ucpAuthTeamsList)
-	ucpAuthTeams.AddCommand(ucpAuthTeamsCreate)
-	ucpAuthTeams.AddCommand(ucpAuthTeamsDelete)
-	ucpAuthTeams.AddCommand(ucpAuthTeamsAddUser)
-	ucpAuthTeams.AddCommand(ucpAuthTeamsDelUser)
-
+	if !DiverRO {
+		ucpAuthTeams.AddCommand(ucpAuthTeamsCreate)
+		ucpAuthTeams.AddCommand(ucpAuthTeamsDelete)
+		ucpAuthTeams.AddCommand(ucpAuthTeamsAddUser)
+		ucpAuthTeams.AddCommand(ucpAuthTeamsDelUser)
+	}
 }
 
 var ucpAuthTeams = &cobra.Command{
