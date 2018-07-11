@@ -15,8 +15,9 @@ func init() {
 	//ucpBuild.Flags().StringVar(&bld.BuildHost, "buildhost", "", "Docker engine where Image will be built")
 
 	// Add Service to UCP root commands
-	UCPRoot.AddCommand(ucpBuild)
-
+	if !DiverRO {
+		UCPRoot.AddCommand(ucpBuild)
+	}
 }
 
 var ucpBuild = &cobra.Command{

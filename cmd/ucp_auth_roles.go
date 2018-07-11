@@ -23,10 +23,11 @@ func init() {
 	// UCP ROLES
 	ucpAuth.AddCommand(ucpAuthRoles)
 	ucpAuthRoles.AddCommand(ucpAuthRolesList)
-	ucpAuthRoles.AddCommand(ucpAuthRolesGet)
-	ucpAuthRoles.AddCommand(ucpAuthRolesCreate)
 	ucpAuthRoles.AddCommand(ucpAuthRolesTotal)
-
+	if !DiverRO {
+		ucpAuthRoles.AddCommand(ucpAuthRolesGet)
+		ucpAuthRoles.AddCommand(ucpAuthRolesCreate)
+	}
 }
 
 var ucpAuthRoles = &cobra.Command{

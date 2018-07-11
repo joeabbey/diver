@@ -34,13 +34,14 @@ func init() {
 
 	ucpAuth.AddCommand(ucpCollections)
 
-	ucpCollections.AddCommand(ucpCollectionsCreate)
-	ucpCollections.AddCommand(ucpCollectionsDelete)
-
 	ucpCollections.AddCommand(ucpCollectionsList)
 	ucpCollections.AddCommand(ucpCollectionsGet)
-	ucpCollections.AddCommand(ucpCollectionsSet)
 
+	if !DiverRO {
+		ucpCollections.AddCommand(ucpCollectionsSet)
+		ucpCollections.AddCommand(ucpCollectionsCreate)
+		ucpCollections.AddCommand(ucpCollectionsDelete)
+	}
 }
 
 var ucpCollections = &cobra.Command{
