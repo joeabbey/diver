@@ -1,6 +1,9 @@
 package ucptypes
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Account - Is the basic Account struct
 type Account struct {
@@ -43,26 +46,6 @@ type Roles struct {
 	Operations json.RawMessage // Captures the raw output of the remaining json object
 }
 
-// Collection - TODO
-type Collection struct {
-	// "name": "Private",
-	// "path": "/Shared/Private",
-	// "id": "private",
-	// "parent_ids": [
-	//   "root",
-	//   "swarm",
-	//   "shared"
-	// ],
-	// "label_constraints": [],
-	// "legacylabelkey": "",
-	// "legacylabelvalue": "",
-	// "created_at": "2018-06-11T17:16:14.124Z",
-	// "updated_at": "2018-06-11T17:16:14.124Z"
-	Name string `json:"name"`
-	Path string `json:"path"`
-	ID   string `json:"id"`
-}
-
 // A grant is based upon three keys:
 // -- ObjectID == Collection
 // -- RoleID == Links the role that is applied (rights)
@@ -87,3 +70,24 @@ const (
 	// GrantObject - kubernetesnamespaces target, which is used to give grants against all Kubernetes namespaces.
 	GrantObject
 )
+
+// Collection - An array of JSON Structs that detail the collections in Docker UCP
+type Collection struct {
+	CreatedAt        time.Time                    `json:"created_at"`
+	ID               string                       `json:"id"`
+	LabelConstraints []CollectionLabelConstraints `json:"label_constraints"`
+	Legacylabelkey   string                       `json:"legacylabelkey"`
+	Legacylabelvalue string                       `json:"legacylabelvalue"`
+	Name             string                       `json:"name"`
+	ParentIds        []string                     `json:"parent_ids"`
+	Path             string                       `json:"path"`
+	UpdatedAt        time.Time                    `json:"updated_at"`
+}
+
+// CollectionLabelConstraints - defines constraints to be applied to a collection
+type CollectionLabelConstraints struct {
+	Equality   bool   `json:"equality"`
+	LabelKey   string `json:"label_key"`
+	LabelValue string `json:"label_value"`
+	Type       string `json:"type"`
+}

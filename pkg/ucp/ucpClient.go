@@ -191,6 +191,27 @@ func (c *Client) putRequest(url string, d []byte) ([]byte, error) {
 	return bytes, nil
 }
 
+// PATCH will update an existing element
+func (c *Client) patchRequest(url string, d []byte) ([]byte, error) {
+
+	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(d))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	// Add authorisation token to HTTP header
+	if len(c.Token) != 0 {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	}
+
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 // DELETE data from the server and return the response as bytes
 func (c *Client) delRequest(url string, d []byte) ([]byte, error) {
 
