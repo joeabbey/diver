@@ -6,7 +6,7 @@ TARGET := diver
 .DEFAULT_GOAL: $(TARGET)
 
 # These will be provided to the target
-VERSION := 0.1
+VERSION := 1.0.0
 BUILD := `git rev-parse HEAD`
 
 # Operating System Default (LINUX)
@@ -49,20 +49,6 @@ docker:
 	@docker build -t $(TARGET):$(DOCKERTAG) ./dockerfile/
 	@rm ./dockerfile/$(TARGET)
 	@echo New Docker image created
-
-release:
-	@echo Creating Darwin Build
-	@GOOS=darwin make build
-	@zip -9 -r diver-darwin-$(VERSION).zip ./diver
-	@rm diver
-	@echo Creating Linux Build
-	@GOOS=linux make build
-	@zip -9 -r diver-linux-$(VERSION).zip ./diver
-	@rm diver
-	@echo Creating Windows Build
-	@GOOS=windows make build
-	@zip -9 -r diver-win-$(VERSION).zip ./diver
-	@rm diver
 
 simplify:
 	@gofmt -s -l -w $(SRC)

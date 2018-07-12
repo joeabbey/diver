@@ -27,11 +27,10 @@ func init() {
 
 	// UCP USERS
 	ucpAuth.AddCommand(ucpAuthUsers)
+	ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
+	ucpAuthUsers.AddCommand(ucpAuthOrgDelete)
 	ucpAuthUsers.AddCommand(ucpAuthUsersList)
-	if !DiverRO {
-		ucpAuthUsers.AddCommand(ucpAuthUsersCreate)
-		ucpAuthUsers.AddCommand(ucpAuthOrgDelete)
-	}
+
 }
 
 var ucpAuthUsers = &cobra.Command{

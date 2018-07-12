@@ -21,12 +21,9 @@ func init() {
 
 	// UCP Grants
 	ucpAuth.AddCommand(ucpAuthGrants)
+	ucpAuthGrants.AddCommand(ucpAuthGrantsSet)
 	ucpAuthGrants.AddCommand(ucpAuthGrantsGet)
 	ucpAuthGrants.AddCommand(ucpAuthGrantsList)
-
-	if !DiverRO {
-		ucpAuthGrants.AddCommand(ucpAuthGrantsSet)
-	}
 
 }
 

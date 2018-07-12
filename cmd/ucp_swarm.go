@@ -25,10 +25,7 @@ func init() {
 
 	ucpSwarm.AddCommand(ucpSwarmRaft)
 	ucpSwarmRaft.AddCommand(ucpSwarmRaftGetInfo)
-
-	if !DiverRO {
-		ucpSwarmRaft.AddCommand(ucpSwarmRaftSetInfo)
-	}
+	ucpSwarmRaft.AddCommand(ucpSwarmRaftSetInfo)
 
 	UCPRoot.AddCommand(ucpSwarm)
 }

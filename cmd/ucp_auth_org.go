@@ -18,12 +18,9 @@ func init() {
 
 	// UCP ORG
 	ucpAuth.AddCommand(ucpAuthOrg)
+	ucpAuthOrg.AddCommand(ucpAuthOrgCreate)
+	ucpAuthOrg.AddCommand(ucpAuthOrgDelete)
 	ucpAuthOrg.AddCommand(ucpAuthOrgList)
-
-	if !DiverRO {
-		ucpAuthOrg.AddCommand(ucpAuthOrgCreate)
-		ucpAuthOrg.AddCommand(ucpAuthOrgDelete)
-	}
 }
 
 var ucpAuthOrg = &cobra.Command{
