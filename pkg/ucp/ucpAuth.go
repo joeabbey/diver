@@ -102,6 +102,11 @@ func NewOrg(fullname, username, password string, isActive, isAdmin, searchLDAP b
 
 //AddAccount - adds a new account to UCP
 func (c *Client) AddAccount(account *ucptypes.Account) error {
+
+	if len(account.Password) < 8 && !account.IsOrg {
+		// UCP appears to have a minimal password lenght (not sure about complexity)
+		return fmt.Errorf("Password doesn't meet complexity levels or length")
+	}
 	if account.IsOrg {
 		log.Infof("Creating account for Organisation [%s]", account.Name)
 	} else {
@@ -138,14 +143,14 @@ func (c *Client) AddAccount(account *ucptypes.Account) error {
 
 //DeleteAccount - deletes an account in UCP
 func (c *Client) DeleteAccount(account string) error {
-	log.Infof("Deleting account for user [%s]", account)
+	log.Infof("Deleting account [%s]", account)
 
 	url := fmt.Sprintf("%s/accounts/%s", c.UCPURL, account)
 
-	_, err := c.delRequest(url, nil)
+	response, err := c.delRequest(url, nil)
 	if err != nil {
-		//err = parseUCPError(err.Error())
-		if err != nil {
+		parseerr := ParseUCPError(response)
+		if parseerr != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
 		return err
@@ -167,9 +172,9 @@ func (c *Client) AddTeamToOrganisation(team *ucptypes.Team, org string) error {
 	}
 	response, err := c.postRequest(url, b)
 	if err != nil {
-		err = ParseUCPError([]byte(err.Error()))
+		parseerr := ParseUCPError(response)
 		if err != nil {
-			log.Errorf("Error parsing UCP error: %v", err)
+			log.Errorf("Error parsing UCP error: %v", parseerr)
 		}
 		return err
 	}
@@ -185,11 +190,11 @@ func (c *Client) DeleteTeamFromOrganisation(team, org string) error {
 
 	url := fmt.Sprintf("%s/accounts/%s/teams/%s", c.UCPURL, org, team)
 
-	_, err := c.delRequest(url, nil)
+	response, err := c.delRequest(url, nil)
 	if err != nil {
-		err = ParseUCPError([]byte(err.Error()))
-		if err != nil {
-			log.Errorf("Error parsing UCP error: %v", err)
+		parseerr := ParseUCPError(response)
+		if parseerr != nil {
+			log.Errorf("Error parsing UCP error: %v", parseerr)
 		}
 		return err
 	}
@@ -232,9 +237,9 @@ func (c *Client) DelUserFromTeam(user, org, team string) error {
 		} else {
 			return err
 		}
-		err = ParseUCPError([]byte(err.Error()))
-		if err != nil {
-			log.Errorf("Error parsing UCP error: %v", err)
+		parseerr := ParseUCPError(response)
+		if parseerr != nil {
+			log.Errorf("Error parsing UCP error: %v", parseerr)
 		}
 		return err
 	}

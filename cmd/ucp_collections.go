@@ -122,7 +122,7 @@ var ucpCollectionsDelete = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		log.Infof("Succesfully delete collection [%s]", name)
+		log.Infof("Succesfully deleted collection [%s]", name)
 
 	},
 }

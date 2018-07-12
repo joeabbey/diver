@@ -13,7 +13,7 @@ else
     exit 1
 fi
 
-echo "Creating five Users"
+echo "Creating nine Users"
 
 ./diver ucp auth users create  --name billy --password billyPassword --fullname "William Hubert"
 ./diver ucp auth users create  --name bobby --password bobbyPassword --fullname "Robert Smythe"
@@ -25,7 +25,7 @@ echo "Creating five Users"
 ./diver ucp auth users create  --name TWellick --password VP4Lyfe! --fullname "Tyrell Wellick"
 ./diver ucp auth users create  --name PPrice --password CEO4Lyfe! --fullname "Phillip Price"
 
-echo "Creating Organisations"
+echo "Creating two Organisations"
 
 ./diver ucp auth org create --name ECorp
 ./diver ucp auth org create --name AllSafe
@@ -66,5 +66,18 @@ ASAFEID=$(./diver ucp auth collections list | grep allsafe | awk '{print $2}')
 
 ./diver ucp auth collections set --key security --value none --type engine --id $ECORPID
 ./diver ucp auth collections set --key hacked --value completely --type node --id $ECORPID
+./diver ucp auth collections set --key honeypot --value installed --type node --id $ECORPID
+
 ./diver ucp auth collections set --key node.type --value freebsd --type node --id $ASAFEID
 ./diver ucp auth collections set --key node.gpu --value nvidia --type node --id $ASAFEID
+
+echo "Cloning roles"
+./diver ucp auth roles get --id viewonly >> ecorpro.role
+./diver ucp auth roles get --id restrictedcontrol >> ecorprw.role
+
+echo "Adding Read Only roles"
+./diver ucp auth roles create --rolename ecorpRO --ruleset ./ecorpro.role
+rm ./ecorpro.role
+echo "Adding Restricted roles"
+./diver ucp auth roles create --rolename ecorpRestricted --ruleset ./ecorprw.role
+rm ./ecorprw.role
