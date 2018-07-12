@@ -158,6 +158,23 @@ func (c *Client) CreateRole(name, id, ruleset string, systemRole bool) error {
 	return nil
 }
 
+//DeleteRole - deletes a role in UCP
+func (c *Client) DeleteRole(account string) error {
+	log.Infof("Deleting Role [%s]", account)
+
+	url := fmt.Sprintf("%s/roles/%s", c.UCPURL, account)
+
+	response, err := c.delRequest(url, nil)
+	if err != nil {
+		parseerr := ParseUCPError(response)
+		if parseerr != nil {
+			log.Errorf("Error parsing UCP error: %v", err)
+		}
+		return err
+	}
+	return nil
+}
+
 //GetGrants - This will return a list of all grants, it can also resolve the UUIDs to names
 func (c *Client) GetGrants(resolve bool) error {
 

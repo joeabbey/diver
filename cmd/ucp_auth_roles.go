@@ -20,6 +20,8 @@ func init() {
 	ucpAuthRolesCreate.Flags().StringVar(&ruleset, "ruleset", "", "Path to a ruleset (JSON) to be used")
 	ucpAuthRolesCreate.Flags().BoolVar(&admin, "service", false, "New role is a system role")
 
+	ucpAuthRolesDelete.Flags().StringVar(&name, "id", "", "ID of the role to delete")
+
 	// UCP ROLES
 	ucpAuth.AddCommand(ucpAuthRoles)
 	ucpAuthRoles.AddCommand(ucpAuthRolesList)
@@ -27,6 +29,8 @@ func init() {
 	if !DiverRO {
 		ucpAuthRoles.AddCommand(ucpAuthRolesGet)
 		ucpAuthRoles.AddCommand(ucpAuthRolesCreate)
+		ucpAuthRoles.AddCommand(ucpAuthRolesDelete)
+
 	}
 }
 
@@ -124,5 +128,26 @@ var ucpAuthRolesCreate = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		log.Infof("Role [%s] created succesfully", name)
+	},
+}
+
+var ucpAuthRolesDelete = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a Docker EE Organisation",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No Role ID specified")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		err = client.DeleteRole(name)
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
 	},
 }

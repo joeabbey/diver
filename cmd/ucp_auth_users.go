@@ -59,6 +59,7 @@ var ucpAuthUsersCreate = &cobra.Command{
 		auth.IsOrg = false
 		err = client.AddAccount(&auth)
 		if err != nil {
+			//log.Warnln("Ensure Password meets minimum security requirements")
 			log.Fatalf("%v", err)
 		}
 	},

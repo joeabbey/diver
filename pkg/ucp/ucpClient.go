@@ -98,7 +98,7 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		return nil, err
+		return bytes, err
 	}
 	return bytes, nil
 }
@@ -186,7 +186,7 @@ func (c *Client) putRequest(url string, d []byte) ([]byte, error) {
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		return nil, err
+		return bytes, err
 	}
 	return bytes, nil
 }
