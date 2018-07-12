@@ -122,8 +122,10 @@ func (c *Client) AddAccount(account *ucptypes.Account) error {
 	}
 	response, err := c.postRequest(url, b)
 	if err != nil {
-		err = ParseUCPError([]byte(err.Error()))
-		if err != nil {
+		log.Debugf("response: %v", err)
+		parseerr := ParseUCPError([]byte(response))
+		if parseerr != nil {
+			log.Debugf("%s", response)
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
 		return err
@@ -204,8 +206,8 @@ func (c *Client) AddUserToTeam(user, org, team string) error {
 	response, err := c.putRequest(url, []byte(`{}`))
 	if err != nil {
 		log.Debugf("%v", string(response))
-		err = ParseUCPError([]byte(err.Error()))
-		if err != nil {
+		parserr := ParseUCPError(response)
+		if parserr != nil {
 			log.Errorf("Error parsing UCP error: %v", err)
 		}
 		return err

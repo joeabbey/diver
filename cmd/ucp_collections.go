@@ -27,8 +27,8 @@ func init() {
 
 	ucpCollectionsSet.Flags().StringVar(&name, "id", "", "The ID of the collection to update")
 
-	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelKey, "key", "", "The ID of the parent collection")
-	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelValue, "value", "", "The ID of the parent collection")
+	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelKey, "key", "", "The label Key")
+	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelValue, "value", "", "The label value")
 	ucpCollectionsSet.Flags().StringVar(&newConstraint.Type, "type", "", "Type is either a \"node\" or \"engine\" constraint")
 	ucpCollectionsSet.Flags().BoolVar(&newConstraint.Equality, "equals", true, "The constraint is that the key \"equals\" the value")
 
