@@ -81,3 +81,24 @@ rm ./ecorpro.role
 echo "Adding Restricted roles"
 ./diver ucp auth roles create --rolename ecorpRestricted --ruleset ./ecorprw.role
 rm ./ecorprw.role
+
+echo "Creating Grants for Teams"
+GRANTROLE=$(./diver ucp auth roles list | grep ecorpRestricted | awk '{print $2}')
+GRANTUSER=$(./diver ucp auth teams list --org ecorp | grep executives | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+GRANTUSER=$(./diver ucp auth teams list --org ecorp | grep Production | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+GRANTUSER=$(./diver ucp auth teams list --org ecorp | grep Development | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+
+echo "Creating Grants for Individual Users"
+GRANTUSER=$(./diver ucp auth users list | grep ealderson | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+./diver ucp auth grants set --collection $ASAFEID --subject $GRANTUSER --role $GRANTROLE
+GRANTUSER=$(./diver ucp auth users list | grep twellick | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+GRANTUSER=$(./diver ucp auth users list | grep barry | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+GRANTUSER=$(./diver ucp auth users list | grep billy | awk '{print $2}')
+./diver ucp auth grants set --collection $ECORPID --subject $GRANTUSER --role $GRANTROLE
+

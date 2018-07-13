@@ -19,6 +19,10 @@ func init() {
 	ucpAuthGrantsSet.Flags().StringVar(&collection, "collection", "", "The collection that will user")
 	ucpAuthGrantsSet.Flags().StringVar(&collectionType, "type", "collection", "Type of grant: collection / namespace / all")
 
+	ucpAuthGrantsDelete.Flags().StringVar(&name, "subject", "", "The subject (user/org) that will be used")
+	ucpAuthGrantsDelete.Flags().StringVar(&ruleset, "role", "", "The role providing the capabilites")
+	ucpAuthGrantsDelete.Flags().StringVar(&collection, "collection", "", "The collection that will user")
+
 	// UCP Grants
 	ucpAuth.AddCommand(ucpAuthGrants)
 	ucpAuthGrants.AddCommand(ucpAuthGrantsGet)
@@ -26,6 +30,8 @@ func init() {
 
 	if !DiverRO {
 		ucpAuthGrants.AddCommand(ucpAuthGrantsSet)
+		ucpAuthGrants.AddCommand(ucpAuthGrantsDelete)
+
 	}
 
 }
@@ -124,6 +130,39 @@ var ucpAuthGrantsSet = &cobra.Command{
 			ucp.ParseUCPError([]byte(err.Error()))
 			return
 		}
-		log.Infof("Grant created succesfully")
+		log.Infof("Grant for user [%s] created succesfully", name)
+	},
+}
+
+var ucpAuthGrantsDelete = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a grant in Docker EE",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if name == "" {
+			cmd.Help()
+			log.Fatalln("No subject specified")
+		}
+
+		if ruleset == "" {
+			cmd.Help()
+			log.Fatalln("No role specified")
+		}
+
+		if collection == "" {
+			cmd.Help()
+			log.Fatalln("No collection specified")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		err = client.DeleteGrant(collection, ruleset, name)
+		if err != nil {
+			ucp.ParseUCPError([]byte(err.Error()))
+			return
+		}
+		log.Infof("Grant for user [%s] deleted succesfully", name)
 	},
 }
