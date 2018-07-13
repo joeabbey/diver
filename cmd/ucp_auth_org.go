@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -106,9 +108,15 @@ var ucpAuthOrgList = &cobra.Command{
 			return
 		}
 		log.Debugf("Found %d Accounts", len(orgs.Accounts))
-		fmt.Printf("Org Name\tID\tFullname\n")
+
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+
+		fmt.Fprintf(w, "Org Name\tID\tFullname\n")
+
 		for _, acct := range orgs.Accounts {
-			fmt.Printf("%s\t%s\t%s\n", acct.Name, acct.ID, acct.FullName)
+			fmt.Fprintf(w, "%s\t%s\t%s\n", acct.Name, acct.ID, acct.FullName)
 		}
+		w.Flush()
 	},
 }
