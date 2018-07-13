@@ -274,3 +274,17 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 
 	return nil
 }
+
+//DeleteGrant - This function will remove an existing grant
+func (c *Client) DeleteGrant(collection, role, subject string) error {
+
+	url := fmt.Sprintf("%s/collectionGrants/%s/%s/%s", c.UCPURL, subject, collection, role)
+	log.Debugf("built URL [%s]", url)
+
+	_, err := c.delRequest(url, nil)
+	if err != nil {
+
+		return err
+	}
+	return nil
+}
