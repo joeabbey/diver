@@ -9,7 +9,7 @@ import (
 	"github.com/thebsdbox/diver/pkg/dtr/types"
 )
 
-func (c *Client) dtrClusterStatus() (*dtrTypes.DTRCluster, error) {
+func (c *Client) dtrClusterStatus() (*dtrtypes.DTRCluster, error) {
 
 	url := fmt.Sprintf("%s/api/v0/meta/cluster_status?refresh_token=%s", c.DTRURL, c.Token)
 
@@ -18,7 +18,26 @@ func (c *Client) dtrClusterStatus() (*dtrTypes.DTRCluster, error) {
 		return nil, err
 	}
 	//log.Debugf("%v", string(response))
-	var info dtrTypes.DTRCluster
+	var info dtrtypes.DTRCluster
+
+	err = json.Unmarshal(response, &info)
+	if err != nil {
+		return nil, err
+	}
+	return &info, nil
+}
+
+//DTRClusterStatus -
+func (c *Client) DTRClusterStatus() (*dtrtypes.DTRSettings, error) {
+
+	url := fmt.Sprintf("%s/api/v0/meta/settings?refresh_token=%s", c.DTRURL, c.Token)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return nil, err
+	}
+	//log.Debugf("%v", string(response))
+	var info dtrtypes.DTRSettings
 
 	err = json.Unmarshal(response, &info)
 	if err != nil {
