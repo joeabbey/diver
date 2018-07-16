@@ -70,7 +70,7 @@ func (c *Client) GetFirstActiveSubscription(id string) error {
 	log.Debugf("Retrieving all subscriptions")
 
 	if id == "" {
-		log.Debugf("Attempting to read ID from ~/.dockerstore")
+		log.Debugf("Attempting to read ID from ~/.storetoken")
 		id = c.ID
 	}
 	url := fmt.Sprintf("%s/?docker_id=%s", c.HUBURL, id)
