@@ -113,3 +113,15 @@ type DTRCluster struct {
 	ReplicaReadonly  interface{}            `json:"replica_readonly"`  //bool
 	GcLockHolder     string                 `json:"gc_lock_holder"`
 }
+
+// DTRWebHook - The struct that defines web hook in DTR
+type DTRWebHook struct {
+	ID           string `json:"id"`
+	EndPoint     string `json:"endpoint"`
+	Key          string `json:"key"`
+	Type         string `json:"type"`
+	AuthorID     string `json:"authorID"`
+	CreatedAt    string `json:"createdAt"`
+	SuccessfulAt string `json:"autlastSuccessfulAthorID"`
+	InActive     bool   `json:"inactive"`
+}

@@ -91,16 +91,12 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(c.Username, c.Password)
-	// Add authorisation token to HTTP header
-	if len(c.Token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	}
+
 	req.Header.Add("Content-Type", "application/json")
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		return nil, err
+		return bytes, err
 	}
 	return bytes, nil
 }
@@ -112,11 +108,6 @@ func (c *Client) getRequest(url string, d []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// // Add authorisation token to HTTP header
-	// if len(c.Token) != 0 {
-	// 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	// }
 
 	req.Header.Add("Content-Type", "application/json")
 
@@ -153,11 +144,6 @@ func (c *Client) delRequest(url string, d []byte) ([]byte, error) {
 	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(d))
 	if err != nil {
 		return nil, err
-	}
-
-	// Add authorisation token to HTTP header
-	if len(c.Token) != 0 {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	}
 
 	bytes, err := c.doRequest(req)
