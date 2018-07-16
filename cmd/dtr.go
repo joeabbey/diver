@@ -14,7 +14,7 @@ import (
 )
 
 var dtrClient dtr.Client
-var webhook dtrTypes.DTRWebHook
+var webhook dtrtypes.DTRWebHook
 
 func init() {
 	dtrLogin.Flags().StringVar(&dtrClient.Username, "username", os.Getenv("DTR_USERNAME"), "Username that has permissions to authenticate to Docker EE")
@@ -90,11 +90,21 @@ var dtrLoginReplicas = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
-		err = client.ListReplicas()
+		dc, err := client.DTRClusterStatus()
 		if err != nil {
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
+
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		fmt.Fprintln(w, "Replica\tNode")
+
+		for replica, settings := range dc.ReplicaSettings {
+			fmt.Fprintf(w, "%s\t%s\n", replica, settings.Node)
+		}
+		w.Flush()
+
 	},
 }
 

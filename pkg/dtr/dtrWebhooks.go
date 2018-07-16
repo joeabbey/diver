@@ -9,7 +9,7 @@ import (
 )
 
 //ListWebhooks -
-func (c *Client) ListWebhooks() ([]dtrTypes.DTRWebHook, error) {
+func (c *Client) ListWebhooks() ([]dtrtypes.DTRWebHook, error) {
 
 	url := fmt.Sprintf("%s/api/v0/webhooks?webhookType=any&refresh_token=%s", c.DTRURL, c.Token)
 
@@ -18,7 +18,7 @@ func (c *Client) ListWebhooks() ([]dtrTypes.DTRWebHook, error) {
 		return nil, err
 	}
 	//log.Debugf("%v", string(response))
-	var info []dtrTypes.DTRWebHook
+	var info []dtrtypes.DTRWebHook
 
 	err = json.Unmarshal(response, &info)
 	if err != nil {
@@ -29,7 +29,7 @@ func (c *Client) ListWebhooks() ([]dtrTypes.DTRWebHook, error) {
 }
 
 //CreateWebhook -
-func (c *Client) CreateWebhook(webhook dtrTypes.DTRWebHook) error {
+func (c *Client) CreateWebhook(webhook dtrtypes.DTRWebHook) error {
 
 	url := fmt.Sprintf("%s/api/v0/webhooks?refresh_token=%s", c.DTRURL, c.Token)
 

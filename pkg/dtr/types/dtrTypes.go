@@ -1,4 +1,4 @@
-package dtrTypes
+package dtrtypes
 
 import "time"
 
@@ -125,3 +125,46 @@ type DTRWebHook struct {
 	SuccessfulAt string `json:"autlastSuccessfulAthorID"`
 	InActive     bool   `json:"inactive"`
 }
+
+//DTRSettings -
+type DTRSettings struct {
+	DtrHost                string `json:"dtrHost"`
+	Sso                    bool   `json:"sso"`
+	CreateRepositoryOnPush bool   `json:"createRepositoryOnPush"`
+	ReplicaSettings        map[string]struct {
+		HTTPPort  int    `json:"HTTPPort"`
+		HTTPSPort int    `json:"HTTPSPort"`
+		Node      string `json:"node"`
+	} `json:"replicaSettings"`
+	HTTPProxy                 string `json:"httpProxy"`
+	HTTPSProxy                string `json:"httpsProxy"`
+	NoProxy                   string `json:"noProxy"`
+	DisableUpgrades           bool   `json:"disableUpgrades"`
+	ReportAnalytics           bool   `json:"reportAnalytics"`
+	AnonymizeAnalytics        bool   `json:"anonymizeAnalytics"`
+	DisableBackupWarning      bool   `json:"disableBackupWarning"`
+	LogProtocol               string `json:"logProtocol"`
+	LogHost                   string `json:"logHost"`
+	LogLevel                  string `json:"logLevel"`
+	WebTLSCert                string `json:"webTLSCert"`
+	WebTLSCA                  string `json:"webTLSCA"`
+	ReplicaID                 string `json:"replicaID"`
+	ScanningEnabled           bool   `json:"scanningEnabled"`
+	ScanningSyncOnline        bool   `json:"scanningSyncOnline"`
+	ScanningEnableAutoRecheck bool   `json:"scanningEnableAutoRecheck"`
+	JobHistoryToKeep          int    `json:"jobHistoryToKeep"`
+	StorageVolume             string `json:"storageVolume"`
+	NfsHost                   string `json:"nfsHost"`
+	NfsPath                   string `json:"nfsPath"`
+}
+
+// Seven79Bef5C7C10 struct {
+// 	HTTPPort  int    `json:"HTTPPort"`
+// 	HTTPSPort int    `json:"HTTPSPort"`
+// 	Node      string `json:"node"`
+// } `json:"779bef5c7c10"`
+// Eb3Bccc35F95 struct {
+// 	HTTPPort  int    `json:"HTTPPort"`
+// 	HTTPSPort int    `json:"HTTPSPort"`
+// 	Node      string `json:"node"`
+// } `json:"eb3bccc35f95"`
