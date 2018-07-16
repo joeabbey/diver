@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -23,6 +25,9 @@ func init() {
 	dtrCmd.AddCommand(dtrLogin)
 	dtrCmd.AddCommand(dtrInfo)
 	dtrInfo.AddCommand(dtrLoginReplicas)
+	dtrWebHooks.AddCommand(dtrWebHooksList)
+	dtrCmd.AddCommand(dtrWebHooks)
+
 	diverCmd.AddCommand(dtrCmd)
 
 }
@@ -78,5 +83,40 @@ var dtrLoginReplicas = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
+	},
+}
+
+var dtrWebHooks = &cobra.Command{
+	Use:   "webhook",
+	Short: "Docker Trusted Registry Webhooks",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
+}
+
+var dtrWebHooksList = &cobra.Command{
+	Use:   "list",
+	Short: "List Docker Trusted Registry Webhooks",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := dtr.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		wh, err := client.ListWebhooks()
+		if err != nil {
+			// Fatal error if can't return any webhooks
+			log.Fatalf("%v", err)
+		}
+
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		fmt.Fprintln(w, "ID\tKey\tType\tEndpoint\tActive")
+
+		for i := range wh {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%t\n", wh[i].ID, wh[i].Key, wh[i].EndPoint, wh[i].Type, wh[i].InActive)
+		}
+		w.Flush()
 	},
 }
