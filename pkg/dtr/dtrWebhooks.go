@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/thebsdbox/diver/pkg/dtr/types"
 )
 
@@ -24,5 +25,40 @@ func (c *Client) ListWebhooks() ([]dtrTypes.DTRWebHook, error) {
 		return nil, err
 	}
 	return info, nil
+
+}
+
+//CreateWebhook -
+func (c *Client) CreateWebhook(webhook dtrTypes.DTRWebHook) error {
+
+	url := fmt.Sprintf("%s/api/v0/webhooks?refresh_token=%s", c.DTRURL, c.Token)
+
+	b, err := json.Marshal(webhook)
+	if err != nil {
+		return err
+	}
+	log.Debugf("%s", b)
+	response, err := c.postRequest(url, b)
+	if err != nil {
+		log.Debugf("%s", response)
+		return err
+	}
+
+	return nil
+
+}
+
+//DeleteWebhook -
+func (c *Client) DeleteWebhook(id string) error {
+
+	url := fmt.Sprintf("%s/api/v0/webhooks/%s?refresh_token=%s", c.DTRURL, id, c.Token)
+
+	response, err := c.delRequest(url, nil)
+	if err != nil {
+		log.Debugf("%s", response)
+		return err
+	}
+
+	return nil
 
 }
