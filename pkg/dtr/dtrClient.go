@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -44,6 +45,10 @@ func (c *Client) Connect() error {
 	if c.DTRURL == "" {
 		return fmt.Errorf("DTR URL hasn't been entered")
 	}
+	if !strings.Contains(c.DTRURL, "https://") {
+		return fmt.Errorf("DTR URL must be secure HTTPS (https://)")
+
+	}
 	// Add the /auth/log to the URL
 	url := fmt.Sprintf("%s/api/v0/api_tokens?username=%s", c.DTRURL, c.Username)
 	log.Debugf("Created URL [%s]", url)
@@ -52,6 +57,7 @@ func (c *Client) Connect() error {
 	data := map[string]string{
 		"tokenLabel": "diver",
 	}
+
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -59,9 +65,10 @@ func (c *Client) Connect() error {
 
 	response, err := c.postRequest(url, b)
 	if err != nil {
-		log.Debugf("%v", response)
 		return err
 	}
+
+	log.Debugf("%s", response)
 
 	var responseData map[string]interface{}
 
@@ -73,7 +80,7 @@ func (c *Client) Connect() error {
 	if responseData["token"] != nil {
 		c.Token = responseData["token"].(string)
 	} else {
-		log.Debugf("%s", string(response))
+		log.Debugf("%s", response)
 		return fmt.Errorf("No Authorisation token returned")
 	}
 	return nil
@@ -90,6 +97,12 @@ func (c *Client) postRequest(url string, d []byte) ([]byte, error) {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(d))
 	if err != nil {
 		return nil, err
+	}
+
+	// Check length of token, if it is nil fallback to basic auth (usually a login attempt)
+	if c.Token == "" {
+		log.Debugf("Falling back to basic authorisation")
+		req.SetBasicAuth(c.Username, c.Password)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -170,11 +183,11 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	// 2xx Success / 3xx Redirection
 	if resp.StatusCode < 400 {
-		log.Debugf("[success] HTTP Status code %d", resp.StatusCode)
+		log.Debugf("[success] HTTP [%s] Status code %d", req.Method, resp.StatusCode)
 		return body, nil
 	}
 	// The error code is > 400
-	log.Debugf("HTTP Error code: %d for URL: %s", resp.StatusCode, req.URL.String())
+	log.Debugf("HTTP [%s] Error code: %d for URL: %s", resp.Request.Method, resp.StatusCode, req.URL.String())
 
 	// Catches the "Majority" of expected responses
 	switch resp.StatusCode {
