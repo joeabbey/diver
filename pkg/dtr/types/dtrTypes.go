@@ -158,13 +158,17 @@ type DTRSettings struct {
 	NfsPath                   string `json:"nfsPath"`
 }
 
-// Seven79Bef5C7C10 struct {
-// 	HTTPPort  int    `json:"HTTPPort"`
-// 	HTTPSPort int    `json:"HTTPSPort"`
-// 	Node      string `json:"node"`
-// } `json:"779bef5c7c10"`
-// Eb3Bccc35F95 struct {
-// 	HTTPPort  int    `json:"HTTPPort"`
-// 	HTTPSPort int    `json:"HTTPSPort"`
-// 	Node      string `json:"node"`
-// } `json:"eb3bccc35f95"`
+// DTRRepository - Struct when querying DTR Repos
+type DTRRepository struct {
+	ID                  string `json:"id"`
+	Namespace           string `json:"namespace"`
+	NamespaceType       string `json:"namespaceType"`
+	Name                string `json:"name"`
+	ShortDescription    string `json:"shortDescription"`
+	Visibility          string `json:"visibility"`
+	ScanOnPush          bool   `json:"scanOnPush"`
+	ImmutableTags       bool   `json:"immutableTags"`
+	EnableManifestLists bool   `json:"enableManifestLists"`
+	Pulls               int    `json:"pulls"`
+	Pushes              int    `json:"pushes"`
+}

@@ -17,7 +17,6 @@ func (c *Client) ListWebhooks() ([]dtrtypes.DTRWebHook, error) {
 	if err != nil {
 		return nil, err
 	}
-	//log.Debugf("%v", string(response))
 	var info []dtrtypes.DTRWebHook
 
 	err = json.Unmarshal(response, &info)
@@ -43,9 +42,7 @@ func (c *Client) CreateWebhook(webhook dtrtypes.DTRWebHook) error {
 		log.Debugf("%s", response)
 		return err
 	}
-
 	return nil
-
 }
 
 //DeleteWebhook -

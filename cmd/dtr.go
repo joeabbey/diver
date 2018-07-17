@@ -15,6 +15,7 @@ import (
 
 var dtrClient dtr.Client
 var webhook dtrtypes.DTRWebHook
+var repository dtrtypes.DTRRepository
 
 func init() {
 	dtrLogin.Flags().StringVar(&dtrClient.Username, "username", os.Getenv("DTR_USERNAME"), "Username that has permissions to authenticate to Docker EE")
@@ -31,14 +32,34 @@ func init() {
 
 	dtrWebHooksDelete.Flags().StringVar(&id, "id", "", "ID of the webhook to delete")
 
+	dtrRepoList.Flags().StringVar(&org, "namespace", "", "The Namespace/Organisation that holds the repositories")
+
+	dtrRepoCreate.Flags().StringVar(&repository.Namespace, "namespace", "", "The Namespace/Organisation that will hold the repositories")
+	dtrRepoCreate.Flags().StringVar(&repository.Name, "name", "", "The Name of the new repository")
+	dtrRepoCreate.Flags().StringVar(&repository.ShortDescription, "description", "", "A Description about the repository")
+	dtrRepoCreate.Flags().StringVar(&repository.Visibility, "visibility", "public", "If the repository should be \"public\" or \"private\"")
+	dtrRepoCreate.Flags().BoolVar(&repository.ImmutableTags, "immutable", false, "Repository tags are immutable")
+	dtrRepoCreate.Flags().BoolVar(&repository.ScanOnPush, "scan", false, "Vulnerability scans enabled on push")
+	dtrRepoCreate.Flags().BoolVar(&repository.EnableManifestLists, "manifest", true, "Enable Repository manifest lists")
+
+	dtrRepoDelete.Flags().StringVar(&repository.Namespace, "namespace", "", "The Namespace/Organisation that holds the repository")
+	dtrRepoDelete.Flags().StringVar(&repository.Name, "name", "", "The Name of the repository to delete")
+
 	dtrCmd.AddCommand(dtrLogin)
 	dtrCmd.AddCommand(dtrInfo)
+
 	dtrInfo.AddCommand(dtrLoginReplicas)
+
 	dtrWebHooks.AddCommand(dtrWebHooksList)
 	dtrWebHooks.AddCommand(dtrWebHooksCreate)
 	dtrWebHooks.AddCommand(dtrWebHooksDelete)
 
+	dtrRepos.AddCommand(dtrRepoList)
+	dtrRepos.AddCommand(dtrRepoCreate)
+	dtrRepos.AddCommand(dtrRepoDelete)
+
 	dtrCmd.AddCommand(dtrWebHooks)
+	dtrCmd.AddCommand(dtrRepos)
 
 	diverCmd.AddCommand(dtrCmd)
 
@@ -82,7 +103,7 @@ var dtrInfo = &cobra.Command{
 
 var dtrLoginReplicas = &cobra.Command{
 	Use:   "replicas",
-	Short: "Docker Trusted Registry Replicase",
+	Short: "Docker Trusted Registry Replicas",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 		client, err := dtr.ReadToken()
@@ -105,6 +126,111 @@ var dtrLoginReplicas = &cobra.Command{
 		}
 		w.Flush()
 
+	},
+}
+
+var dtrRepos = &cobra.Command{
+	Use:   "repos",
+	Short: "Docker Trusted Registry Repositories",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
+}
+
+var dtrRepoList = &cobra.Command{
+	Use:   "list",
+	Short: "List Docker Trusted Registry Repositories",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := dtr.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+
+		var r []dtrtypes.DTRRepository
+
+		if org == "" {
+			log.Debugf("No namespace, returning all repositories")
+			r, err = client.ListAllRepositories()
+			if err != nil {
+				// Fatal error if can't return any webhooks
+				log.Fatalf("%v", err)
+			}
+		} else {
+			r, err = client.ListReposForNamespace(org)
+			if err != nil {
+				// Fatal error if can't return any webhooks
+				log.Fatalf("%v", err)
+			}
+		}
+
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		fmt.Fprintln(w, "Name\tID\tNamespace\tDescription")
+
+		for i := range r {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", r[i].Name, r[i].ID, r[i].Namespace, r[i].ShortDescription)
+		}
+		w.Flush()
+	},
+}
+
+var dtrRepoCreate = &cobra.Command{
+	Use:   "create",
+	Short: "Create a Docker Trusted Registry Repository",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if repository.Name == "" {
+			cmd.Help()
+			log.Fatalf("No repository name specified")
+		}
+
+		if repository.Namespace == "" {
+			cmd.Help()
+			log.Fatalf("No repository namespace specified")
+		}
+
+		client, err := dtr.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.CreateRepository(repository)
+		if err != nil {
+			// Fatal error if can't return any webhooks
+			log.Fatalf("%v", err)
+		}
+		log.Infof("New Repository [%s] created for namespace [%s]", repository.Name, repository.Namespace)
+	},
+}
+
+var dtrRepoDelete = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a Docker Trusted Registry Repository",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if repository.Name == "" {
+			cmd.Help()
+			log.Fatalf("No repository name specified")
+		}
+
+		if repository.Namespace == "" {
+			cmd.Help()
+			log.Fatalf("No repository namespace specified")
+		}
+
+		client, err := dtr.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.DeleteRepository(repository)
+		if err != nil {
+			// Fatal error if can't return any webhooks
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Repository [%s] deleted from namespace [%s]", repository.Name, repository.Namespace)
 	},
 }
 
