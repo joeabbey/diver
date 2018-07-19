@@ -8,7 +8,7 @@ import (
 	"github.com/thebsdbox/diver/pkg/dtr/types"
 )
 
-//DTRCreateRepoOnPush -
+//DTRCreateRepoOnPush - This will toggle the functionality to enable repositories to be created on push
 func (c *Client) DTRCreateRepoOnPush(enabled bool) error {
 
 	url := fmt.Sprintf("%s/api/v0/meta/settings?refresh_token=%s", c.DTRURL, c.Token)
@@ -19,6 +19,29 @@ func (c *Client) DTRCreateRepoOnPush(enabled bool) error {
 
 	dtrSettings.EnableCreateOnPush = enabled
 	log.Debugf("Setting EnableCreateOnPush set to [%t]", enabled)
+	b, err := json.Marshal(dtrSettings)
+	if err != nil {
+		return nil
+	}
+	_, err = c.postRequest(url, b)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//DTRScanningEnable - This will toggle the functionality to enable Image Scanning
+func (c *Client) DTRScanningEnable(enabled bool) error {
+
+	url := fmt.Sprintf("%s/api/v0/meta/settings?refresh_token=%s", c.DTRURL, c.Token)
+
+	var dtrSettings struct {
+		EnableCreateOnPush bool `json:"scanningEnabled"`
+	}
+
+	dtrSettings.EnableCreateOnPush = enabled
+	log.Debugf("Setting scanningEnabled set to [%t]", enabled)
 	b, err := json.Marshal(dtrSettings)
 	if err != nil {
 		return nil

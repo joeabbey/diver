@@ -9,8 +9,9 @@ import (
 var enable bool
 
 func init() {
-	dtrSettingsCreateRepo.Flags().BoolVar(&enable, "enable", true, "Enable the creation of a repository on push")
+	dtrSettingsSet.PersistentFlags().BoolVar(&enable, "setting", true, "--setting=true/false will enable or disable this setting")
 	dtrSettingsSet.AddCommand(dtrSettingsCreateRepo)
+	dtrSettingsSet.AddCommand(dtrSettingsScanning)
 
 }
 
@@ -29,6 +30,26 @@ var dtrSettingsCreateRepo = &cobra.Command{
 		if err != nil {
 			// Fatal error if can't return any webhooks
 			log.Fatalf("%v", err)
+		}
+	},
+}
+
+var dtrSettingsScanning = &cobra.Command{
+	Use:   "scanning",
+	Short: "DTR Image scanning",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := dtr.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.DTRScanningEnable(enable)
+		if err != nil {
+			// Fatal error if can't return any webhooks
+			log.Fatalf("%v", err)
+
 		}
 	},
 }
