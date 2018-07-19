@@ -167,10 +167,11 @@ var dtrRepoList = &cobra.Command{
 
 		const padding = 3
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
-		fmt.Fprintln(w, "Name\tID\tNamespace\tDescription")
+		fmt.Fprintln(w, "Repo\tID\tName\tNamespace\tDescription")
 
 		for i := range r {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", r[i].Name, r[i].ID, r[i].Namespace, r[i].ShortDescription)
+			repoName := r[i].Namespace + "/" + r[i].Name
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", repoName, r[i].ID, r[i].Name, r[i].Namespace, r[i].ShortDescription)
 		}
 		w.Flush()
 	},
