@@ -34,7 +34,7 @@ type Subscription struct {
 }
 
 //GetAllSubscriptions - Retrieves all subscriptions
-func (c *Client) GetAllSubscriptions(id string) error {
+func (c *Client) GetAllSubscriptions(id string) ([]Subscription, error) {
 	log.Debugf("Retrieving all subscriptions")
 
 	if id == "" {
@@ -46,52 +46,15 @@ func (c *Client) GetAllSubscriptions(id string) error {
 	log.Debugf("Url = %s", url)
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var returnedSubs []Subscription
 
 	err = json.Unmarshal(response, &returnedSubs)
 	if err != nil {
-		return err
-	}
-	for i := range returnedSubs {
-		fmt.Printf("Name:\t\t%s\n", returnedSubs[i].Name)
-		fmt.Printf("Subscription:\t%s\n", returnedSubs[i].SubscriptionID)
-		fmt.Printf("State:\t\t%s\n", returnedSubs[i].State)
-
+		return nil, err
 	}
 
-	return nil
-}
-
-//GetFirstActiveSubscription - Retrieves all subscriptions
-func (c *Client) GetFirstActiveSubscription(id string) error {
-	log.Debugf("Retrieving all subscriptions")
-
-	if id == "" {
-		log.Debugf("Attempting to read ID from ~/.storetoken")
-		id = c.ID
-	}
-	url := fmt.Sprintf("%s/?docker_id=%s", c.HUBURL, id)
-	log.Debugf("Url = %s", url)
-	response, err := c.getRequest(url, nil)
-	if err != nil {
-		return err
-	}
-
-	var returnedSubs []Subscription
-
-	err = json.Unmarshal(response, &returnedSubs)
-	if err != nil {
-		return err
-	}
-	for i := range returnedSubs {
-		if returnedSubs[i].State == "active" {
-			fmt.Printf("%s\n", returnedSubs[i].SubscriptionID)
-			return nil
-		}
-	}
-
-	return fmt.Errorf("No Active Subscriptions found")
+	return returnedSubs, nil
 }
