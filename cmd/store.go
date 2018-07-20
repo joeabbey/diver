@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -12,7 +14,7 @@ import (
 
 var storeClient store.Client
 var id string
-var firstActive bool
+var firstActive, trialurl, url bool
 
 func init() {
 	storeCmd.Flags().StringVar(&storeClient.Username, "username", os.Getenv("STORE_USERNAME"), "Username that has permissions to authenticate to Docker EE")
@@ -26,6 +28,8 @@ func init() {
 
 	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Docker Store ID, by default will take the ID from ~/.storetoken")
 	storeSubscriptionsList.Flags().BoolVar(&firstActive, "firstactive", false, "Retrieve first active subscription")
+	storeSubscriptionsList.Flags().BoolVar(&trialurl, "trial", false, "Retrieve first active subscription as a trial URL")
+	storeSubscriptionsList.Flags().BoolVar(&url, "url", false, "Retrieve first active subscription as a URL")
 
 	storeUser.Flags().StringVar(&id, "user", "", "Retrieve information about a specified user")
 
@@ -52,6 +56,7 @@ var storeCmd = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Warn("Unable to find existing session, please login")
 		} else {
+			cmd.Help()
 			log.Infof("Existing session found at ~/.storetoken")
 			return
 		}
@@ -82,7 +87,7 @@ var storeSubscriptions = &cobra.Command{
 }
 
 var storeSubscriptionsList = &cobra.Command{
-	Use:   "ls",
+	Use:   "list",
 	Short: "List Docker Store subscriptions",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
@@ -94,18 +99,39 @@ var storeSubscriptionsList = &cobra.Command{
 			log.Warn("Unable to find existing session, please login")
 			return
 		}
-		if firstActive == true {
-			err = existingClient.GetFirstActiveSubscription(id)
-			if err != nil {
-				log.Fatalf("%v", err)
-			}
-			return
-		}
 
-		err = existingClient.GetAllSubscriptions(id)
+		subs, err := existingClient.GetAllSubscriptions(id)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+
+		if firstActive == true || trialurl == true || url == true {
+			for i := range subs {
+				if subs[i].State == "active" {
+					if firstActive {
+						fmt.Printf("%s\n", subs[i].SubscriptionID)
+					}
+					if trialurl {
+						fmt.Printf("https://storebits.docker.com/ee/trial/%s\n", subs[i].SubscriptionID)
+					}
+					if url {
+						fmt.Printf("https://storebits.docker.com/ee/%s\n", subs[i].SubscriptionID)
+					}
+					return
+				}
+			}
+			log.Fatalln("No Active Subscriptions found")
+			return
+		}
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+		fmt.Fprintln(w, "Subscriptiob Name\tSubscription ID\tState")
+		for i := range subs {
+			fmt.Fprintf(w, "%s\t%s\t%s\n", subs[i].Name, subs[i].SubscriptionID, subs[i].State)
+		}
+
+		w.Flush()
+
 	},
 }
 
