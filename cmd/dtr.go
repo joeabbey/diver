@@ -117,8 +117,7 @@ var dtrLoginReplicas = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-		const padding = 3
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 		fmt.Fprintln(w, "Replica\tNode")
 
 		for replica, settings := range dc.ReplicaSettings {
@@ -165,8 +164,7 @@ var dtrRepoList = &cobra.Command{
 			}
 		}
 
-		const padding = 3
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 		fmt.Fprintln(w, "Repo\tID\tName\tNamespace\tDescription")
 
 		for i := range r {
@@ -259,8 +257,7 @@ var dtrWebHooksList = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-		const padding = 3
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 		fmt.Fprintln(w, "ID\tKey\tEndpoint\tType\tInActive")
 
 		for i := range wh {

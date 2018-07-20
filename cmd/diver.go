@@ -24,6 +24,9 @@ var DiverBuild string
 // DiverRO Sets Diver to READ ONLY (all SET/CREATE commands are disabled)
 var DiverRO bool
 
+// Defines the padding for tabwritter through all diver output
+const tabPadding = 3
+
 func init() {
 	// Global flag across all subcommands
 	diverCmd.PersistentFlags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")

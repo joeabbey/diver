@@ -44,8 +44,7 @@ var dtrSettingsGet = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-		const padding = 3
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 		fmt.Fprintln(w, "Configuration\tSetting")
 
 		fmt.Fprintf(w, "DTR Host\t%s\n", settings.DtrHost)

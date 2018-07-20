@@ -29,3 +29,24 @@ func (c *Client) ListAllNodes() ([]swarm.Node, error) {
 
 	return nodes, nil
 }
+
+//GetNode - Retrieves the complete list of all nodes connected to a UCP cluster
+func (c *Client) GetNode(id string) (swarm.Node, error) {
+
+	url := fmt.Sprintf("%s/nodes/%s", c.UCPURL, id)
+	// We will get the struct of a node from the API call
+	var node swarm.Node
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		return node, err
+	}
+
+	log.Debugf("Parsing all nodes")
+	err = json.Unmarshal(response, &node)
+	if err != nil {
+		return node, err
+	}
+
+	return node, nil
+}
