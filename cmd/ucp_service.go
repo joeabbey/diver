@@ -170,11 +170,16 @@ func printServiceSpec(service *swarm.Service, spec *swarm.ServiceSpec) {
 
 	//Print reservations
 	if spec.TaskTemplate.Resources != nil {
-		fmt.Fprintf(w, "Memory Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.MemoryBytes)
-		fmt.Fprintf(w, "CPU Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.NanoCPUs)
+		// Check if this struct exists
+		if spec.TaskTemplate.Resources.Reservations != nil {
+			fmt.Fprintf(w, "Memory Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.MemoryBytes)
+			fmt.Fprintf(w, "CPU Reservation:\t%d\n", spec.TaskTemplate.Resources.Reservations.NanoCPUs)
+		}
 		//Print limits
-		fmt.Fprintf(w, "Memory Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.MemoryBytes)
-		fmt.Fprintf(w, "CPU Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.NanoCPUs)
+		if spec.TaskTemplate.Resources.Limits != nil {
+			fmt.Fprintf(w, "Memory Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.MemoryBytes)
+			fmt.Fprintf(w, "CPU Limits:\t%d\n", spec.TaskTemplate.Resources.Limits.NanoCPUs)
+		}
 	}
 	// Check the pointer to the replica struct isn't nil and read replica count
 	if spec.Mode.Replicated != nil {
