@@ -95,6 +95,53 @@ func (c *Client) GetServiceTasks(serviceName string) ([]swarm.Task, error) {
 	return tasks, nil
 }
 
+// ReapFailedTasks - This returns all tasks associated with a service
+func (c *Client) ReapFailedTasks(serviceName string, rmvol, kill bool) error {
+
+	tasks, err := c.GetServiceTasks(serviceName)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Found %d tasks, finding tasks in \"failed\" status", len(tasks))
+
+	if len(tasks) == 0 {
+		return fmt.Errorf("No tasks found for service [%s]", serviceName)
+	}
+
+	var failedTasks []string
+
+	for i := range tasks {
+		if tasks[i].Status.State == "failed" {
+			// Look for an existing container that matches the ID
+			_, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
+			// If we find one, we know that it exists and can be added to be reaped
+			if err == nil {
+				failedTasks = append(failedTasks, tasks[i].Status.ContainerStatus.ContainerID)
+			}
+		}
+	}
+
+	if len(failedTasks) == 0 {
+		log.Info("No tasks in a \"failed\" state")
+	}
+
+	for i := range failedTasks {
+		fmt.Printf("Removing %s\n", failedTasks[i])
+
+		// DELETE CODE GOES HERE
+
+		// url := fmt.Sprintf("%s/services/%s", c.UCPURL, failedTasks[i])
+		// _, err = c.delRequest(url, nil)
+		// if err != nil {
+		// 	return err
+		// }
+
+	}
+
+	return nil
+}
+
 // QueryServiceContainers - This takes a query struct and builds output
 func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 

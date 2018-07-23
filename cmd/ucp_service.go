@@ -13,13 +13,14 @@ import (
 
 var svc ucp.ServiceQuery
 
-var prevSpec bool
+var prevSpec, colour bool
 
 func init() {
 	// Service flags
 	ucpServiceList.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
 	ucpServiceGetTasks.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+	ucpServiceGetTasks.Flags().BoolVar(&colour, "colour", false, "Use Colour in Task output")
 
 	// Query options
 	ucpServiceList.Flags().BoolVar(&svc.ID, "id", false, "Display task ID")
@@ -29,7 +30,7 @@ func init() {
 	ucpServiceList.Flags().BoolVar(&svc.Resolve, "resolve", false, "Resolve Task IDs to human readable names")
 
 	// Service Reap flags
-	ucpServiceReap.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+	ucpServiceReap.Flags().StringVar(&svc.ServiceName, "name", "", "Reap tasks from this Service")
 
 	// Service Architecture flags
 	ucpServiceArchitecture.Flags().BoolVar(&prevSpec, "previousSpec", false, "Display the previous Service specification")
@@ -115,29 +116,51 @@ var ucpServiceGetTasks = &cobra.Command{
 
 		log.Debugf("Found %d tasks for service %s", len(tasks), svc.ServiceName)
 
-		for i := range tasks {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+		fmt.Fprintln(w, "Hostame\tID\tNode\tIP Address\tNetwork\tState")
 
-			// Print task ID
+		for i := range tasks {
+			// Retrieve task ID
 			task := tasks[i].Status.ContainerStatus.ContainerID
 			resolvedTask, err := client.GetContainerFromID(task)
+			if colour {
+				switch tasks[i].Status.State {
+				case "running":
+					fmt.Fprintf(w, "\x1b[32;1m")
+
+				case "failed":
+					fmt.Fprintf(w, "\x1b[31;1m")
+
+				case "shutdown":
+					fmt.Fprintf(w, "\x1b[34;1m")
+				}
+				if err != nil {
+					fmt.Fprintf(w, "\x1b[36;1m")
+
+				}
+			}
+
 			if err != nil {
 				// Usually we return from all errors, however we may have lost container IDs
-				ucp.ParseUCPError([]byte(err.Error()))
+				//ucp.ParseUCPError([]byte(err.Error()))
+				fmt.Fprintf(w, "%s\t%s\t", "Removed", task)
+
 				// continue goes to the next loop
-				continue
+				//continue
 			} else {
-				fmt.Printf("%s\t%s\t", resolvedTask.Name, resolvedTask.ID)
+				fmt.Fprintf(w, "%s\t%s\t", resolvedTask.Name, resolvedTask.ID)
 			}
 
 			// Above query will have cached the results if the container was found
 			containerNode, err := client.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
 			if err != nil {
 				// Usually we return from all errors, however we may have lost container IDs
-				ucp.ParseUCPError([]byte(err.Error()))
+				//ucp.ParseUCPError([]byte(err.Error()))
 				// continue goes to the next loop
-				continue
+				//continue
+				fmt.Fprintf(w, "Removed\t")
 			} else {
-				fmt.Printf("%s\t", containerNode.Node.Name)
+				fmt.Fprintf(w, "%s\t", containerNode.Node.Name)
 			}
 
 			// Print all networks attached to task (Only if attachements exist)
@@ -158,16 +181,18 @@ var ucpServiceGetTasks = &cobra.Command{
 						networkString = networkString + address + "\t" + resolvedNetwork.Name + "\t"
 					}
 				}
-				fmt.Printf("%s", networkString)
+				fmt.Fprintf(w, "%s", networkString)
 			} else {
-				fmt.Printf("Unattached\t")
+				fmt.Fprintf(w, "Unattached\t")
 			}
 
-			fmt.Printf("%s\t", tasks[i].Status.State)
+			fmt.Fprintf(w, "%s\t", tasks[i].Status.State)
 
 			// Create a newline for the next task
-			fmt.Printf("\n")
+			fmt.Fprintf(w, "\n")
 		}
+		w.Flush()
+		fmt.Printf("\x1b[0m")
 	},
 }
 
@@ -183,7 +208,7 @@ var ucpServiceReap = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		if svc.ServiceName != "" {
-			err := client.QueryServiceContainers(&svc)
+			err := client.ReapFailedTasks(svc.ServiceName, false, false)
 			if err != nil {
 				log.Fatalf("%v", err)
 			}
