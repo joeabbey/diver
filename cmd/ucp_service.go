@@ -19,6 +19,8 @@ func init() {
 	// Service flags
 	ucpServiceList.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
+	ucpServiceGetTasks.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+
 	// Query options
 	ucpServiceList.Flags().BoolVar(&svc.ID, "id", false, "Display task ID")
 	ucpServiceList.Flags().BoolVar(&svc.Networks, "networks", false, "Display task Network connections")
@@ -35,14 +37,18 @@ func init() {
 	// Add Service to UCP root commands
 	UCPRoot.AddCommand(ucpService)
 
+	ucpServiceGet.AddCommand(ucpServiceGetTasks)
+
 	// Add reap to service subcommands
 	ucpService.AddCommand(ucpServiceList)
 	ucpService.AddCommand(ucpServiceReap)
 	ucpService.AddCommand(ucpServiceArchitecture)
+	ucpService.AddCommand(ucpServiceGet)
+
 }
 
 var ucpService = &cobra.Command{
-	Use:   "service",
+	Use:   "services",
 	Short: "Interact with services",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
@@ -61,19 +67,106 @@ var ucpServiceList = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
-		log.Debugf("Looking for service [%s]", svc.ServiceName)
 
-		if svc.ServiceName != "" {
-			err = client.QueryServiceContainers(&svc)
-			if err != nil {
-				log.Fatalf("%v", err)
-			}
-			return
-		}
-
-		err = client.GetAllServices()
+		svcs, err := client.GetAllServices()
 		if err != nil {
 			log.Fatalf("%v", err)
+		}
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+		fmt.Fprintln(w, "Name\tID")
+		for i := range svcs {
+
+			fmt.Fprintf(w, "%s\t%s\n", svcs[i].Spec.Name, svcs[i].ID)
+		}
+		w.Flush()
+
+	},
+}
+
+var ucpServiceGet = &cobra.Command{
+	Use:   "get",
+	Short: "Retrieve information about a Service",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		cmd.Help()
+	},
+}
+
+var ucpServiceGetTasks = &cobra.Command{
+	Use:   "tasks",
+	Short: "Retrieve all tasks from a service",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		if svc.ServiceName == "" {
+			cmd.Help()
+			log.Fatalf("Please specify either a Service Name")
+		}
+		//retrieve all tasks
+		tasks, err := client.GetServiceTasks(svc.ServiceName)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		log.Debugf("Found %d tasks for service %s", len(tasks), svc.ServiceName)
+
+		for i := range tasks {
+
+			// Print task ID
+			task := tasks[i].Status.ContainerStatus.ContainerID
+			resolvedTask, err := client.GetContainerFromID(task)
+			if err != nil {
+				// Usually we return from all errors, however we may have lost container IDs
+				ucp.ParseUCPError([]byte(err.Error()))
+				// continue goes to the next loop
+				continue
+			} else {
+				fmt.Printf("%s\t%s\t", resolvedTask.Name, resolvedTask.ID)
+			}
+
+			// Above query will have cached the results if the container was found
+			containerNode, err := client.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
+			if err != nil {
+				// Usually we return from all errors, however we may have lost container IDs
+				ucp.ParseUCPError([]byte(err.Error()))
+				// continue goes to the next loop
+				continue
+			} else {
+				fmt.Printf("%s\t", containerNode.Node.Name)
+			}
+
+			// Print all networks attached to task (Only if attachements exist)
+			if len(tasks[i].NetworksAttachments) != 0 {
+				var networkString string
+				for n := range tasks[i].NetworksAttachments {
+					for a := range tasks[i].NetworksAttachments[n].Addresses {
+
+						address := tasks[i].NetworksAttachments[n].Addresses[a]
+						networkID := tasks[i].NetworksAttachments[n].Network.ID
+
+						// build output from query
+						resolvedNetwork, err := client.GetNetworkFromID(networkID)
+						if err != nil {
+							return
+						}
+						// Build from resolved name
+						networkString = networkString + address + "\t" + resolvedNetwork.Name + "\t"
+					}
+				}
+				fmt.Printf("%s", networkString)
+			} else {
+				fmt.Printf("Unattached\t")
+			}
+
+			fmt.Printf("%s\t", tasks[i].Status.State)
+
+			// Create a newline for the next task
+			fmt.Printf("\n")
 		}
 	},
 }

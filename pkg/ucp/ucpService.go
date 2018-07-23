@@ -42,13 +42,13 @@ func (c *Client) GetService(service string) (*swarm.Service, error) {
 }
 
 //GetAllServices - This will return a list of services
-func (c *Client) GetAllServices() error {
+func (c *Client) GetAllServices() ([]swarm.Service, error) {
 
 	url := fmt.Sprintf("%s/services", c.UCPURL)
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// We will get an array of services from the API call
@@ -57,18 +57,42 @@ func (c *Client) GetAllServices() error {
 	log.Debugf("Parsing all services")
 	err = json.Unmarshal(response, &services)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Debugf("Found %d services", len(services))
+	return services, nil
 
-	// Loop through all networks in the array
-	for i := range services {
-		name := services[i].Spec.Name
-		id := services[i].ID
-		fmt.Printf("%s \t %s\n", id, name)
+}
+
+// GetServiceTasks - This returns all tasks associated with a service
+func (c *Client) GetServiceTasks(serviceName string) ([]swarm.Task, error) {
+
+	// Build JSON object => e.g. {"service": ["task_test"]}
+
+	// TODO - this is a hack as html.escapestring() wont escape "{}:"
+	beginEncode := "%7B%22service%22%3A%5B%22"
+	endEncode := "%22%5D%7D"
+	encodeString := beginEncode + serviceName + endEncode
+
+	url := fmt.Sprintf("%s/tasks?filters=%s", c.UCPURL, encodeString)
+
+	log.Debugf("Built url %s", url)
+
+	response, err := c.getRequest(url, nil)
+	if err != nil {
+		//TODO - Must be a nicer method for this
+		ParseUCPError(response)
+		return nil, err
 	}
-	return nil
+
+	var tasks []swarm.Task
+
+	err = json.Unmarshal(response, &tasks)
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
 }
 
 // QueryServiceContainers - This takes a query struct and builds output
