@@ -134,30 +134,18 @@ var ucpServiceGetTasks = &cobra.Command{
 				case "shutdown":
 					fmt.Fprintf(w, "\x1b[34;1m")
 				}
-				if err != nil {
-					fmt.Fprintf(w, "\x1b[36;1m")
-
-				}
 			}
 
+			// Print details about container, unless it has already been removed
 			if err != nil {
-				// Usually we return from all errors, however we may have lost container IDs
-				//ucp.ParseUCPError([]byte(err.Error()))
 				fmt.Fprintf(w, "%s\t%s\t", "Removed", task)
-
-				// continue goes to the next loop
-				//continue
 			} else {
 				fmt.Fprintf(w, "%s\t%s\t", resolvedTask.Name, resolvedTask.ID)
 			}
 
-			// Above query will have cached the results if the container was found
+			// Retrieve node for container
 			containerNode, err := client.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
 			if err != nil {
-				// Usually we return from all errors, however we may have lost container IDs
-				//ucp.ParseUCPError([]byte(err.Error()))
-				// continue goes to the next loop
-				//continue
 				fmt.Fprintf(w, "Removed\t")
 			} else {
 				fmt.Fprintf(w, "%s\t", containerNode.Node.Name)
