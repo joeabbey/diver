@@ -13,11 +13,14 @@ import (
 
 var svc ucp.ServiceQuery
 
-var prevSpec bool
+var prevSpec, colour bool
 
 func init() {
 	// Service flags
 	ucpServiceList.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+
+	ucpServiceGetTasks.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+	ucpServiceGetTasks.Flags().BoolVar(&colour, "colour", false, "Use Colour in Task output")
 
 	// Query options
 	ucpServiceList.Flags().BoolVar(&svc.ID, "id", false, "Display task ID")
@@ -27,7 +30,7 @@ func init() {
 	ucpServiceList.Flags().BoolVar(&svc.Resolve, "resolve", false, "Resolve Task IDs to human readable names")
 
 	// Service Reap flags
-	ucpServiceReap.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
+	ucpServiceReap.Flags().StringVar(&svc.ServiceName, "name", "", "Reap tasks from this Service")
 
 	// Service Architecture flags
 	ucpServiceArchitecture.Flags().BoolVar(&prevSpec, "previousSpec", false, "Display the previous Service specification")
@@ -35,14 +38,18 @@ func init() {
 	// Add Service to UCP root commands
 	UCPRoot.AddCommand(ucpService)
 
+	ucpServiceGet.AddCommand(ucpServiceGetTasks)
+
 	// Add reap to service subcommands
 	ucpService.AddCommand(ucpServiceList)
 	ucpService.AddCommand(ucpServiceReap)
 	ucpService.AddCommand(ucpServiceArchitecture)
+	ucpService.AddCommand(ucpServiceGet)
+
 }
 
 var ucpService = &cobra.Command{
-	Use:   "service",
+	Use:   "services",
 	Short: "Interact with services",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
@@ -61,20 +68,119 @@ var ucpServiceList = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
-		log.Debugf("Looking for service [%s]", svc.ServiceName)
 
-		if svc.ServiceName != "" {
-			err = client.QueryServiceContainers(&svc)
-			if err != nil {
-				log.Fatalf("%v", err)
-			}
-			return
-		}
-
-		err = client.GetAllServices()
+		svcs, err := client.GetAllServices()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+		fmt.Fprintln(w, "Name\tID")
+		for i := range svcs {
+
+			fmt.Fprintf(w, "%s\t%s\n", svcs[i].Spec.Name, svcs[i].ID)
+		}
+		w.Flush()
+
+	},
+}
+
+var ucpServiceGet = &cobra.Command{
+	Use:   "get",
+	Short: "Retrieve information about a Service",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		cmd.Help()
+	},
+}
+
+var ucpServiceGetTasks = &cobra.Command{
+	Use:   "tasks",
+	Short: "Retrieve all tasks from a service",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		if svc.ServiceName == "" {
+			cmd.Help()
+			log.Fatalf("Please specify either a Service Name")
+		}
+		//retrieve all tasks
+		tasks, err := client.GetServiceTasks(svc.ServiceName)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		log.Debugf("Found %d tasks for service %s", len(tasks), svc.ServiceName)
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+		fmt.Fprintln(w, "Hostame\tID\tNode\tIP Address\tNetwork\tState")
+
+		for i := range tasks {
+			// Retrieve task ID
+			task := tasks[i].Status.ContainerStatus.ContainerID
+			resolvedTask, err := client.GetContainerFromID(task)
+			if colour {
+				switch tasks[i].Status.State {
+				case "running":
+					fmt.Fprintf(w, "\x1b[32;1m")
+
+				case "failed":
+					fmt.Fprintf(w, "\x1b[31;1m")
+
+				case "shutdown":
+					fmt.Fprintf(w, "\x1b[34;1m")
+				}
+			}
+
+			// Print details about container, unless it has already been removed
+			if err != nil {
+				fmt.Fprintf(w, "%s\t%s\t", "Removed", task)
+			} else {
+				fmt.Fprintf(w, "%s\t%s\t", resolvedTask.Name, resolvedTask.ID)
+			}
+
+			// Retrieve node for container
+			containerNode, err := client.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
+			if err != nil {
+				fmt.Fprintf(w, "Removed\t")
+			} else {
+				fmt.Fprintf(w, "%s\t", containerNode.Node.Name)
+			}
+
+			// Print all networks attached to task (Only if attachements exist)
+			if len(tasks[i].NetworksAttachments) != 0 {
+				var networkString string
+				for n := range tasks[i].NetworksAttachments {
+					for a := range tasks[i].NetworksAttachments[n].Addresses {
+
+						address := tasks[i].NetworksAttachments[n].Addresses[a]
+						networkID := tasks[i].NetworksAttachments[n].Network.ID
+
+						// build output from query
+						resolvedNetwork, err := client.GetNetworkFromID(networkID)
+						if err != nil {
+							return
+						}
+						// Build from resolved name
+						networkString = networkString + address + "\t" + resolvedNetwork.Name + "\t"
+					}
+				}
+				fmt.Fprintf(w, "%s", networkString)
+			} else {
+				fmt.Fprintf(w, "Unattached\t")
+			}
+
+			fmt.Fprintf(w, "%s\t", tasks[i].Status.State)
+
+			// Create a newline for the next task
+			fmt.Fprintf(w, "\n")
+		}
+		w.Flush()
+		fmt.Printf("\x1b[0m")
 	},
 }
 
@@ -90,7 +196,7 @@ var ucpServiceReap = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		if svc.ServiceName != "" {
-			err := client.QueryServiceContainers(&svc)
+			err := client.ReapFailedTasks(svc.ServiceName, false, false)
 			if err != nil {
 				log.Fatalf("%v", err)
 			}

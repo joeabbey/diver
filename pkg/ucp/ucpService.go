@@ -42,13 +42,13 @@ func (c *Client) GetService(service string) (*swarm.Service, error) {
 }
 
 //GetAllServices - This will return a list of services
-func (c *Client) GetAllServices() error {
+func (c *Client) GetAllServices() ([]swarm.Service, error) {
 
 	url := fmt.Sprintf("%s/services", c.UCPURL)
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// We will get an array of services from the API call
@@ -57,29 +57,23 @@ func (c *Client) GetAllServices() error {
 	log.Debugf("Parsing all services")
 	err = json.Unmarshal(response, &services)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Debugf("Found %d services", len(services))
+	return services, nil
 
-	// Loop through all networks in the array
-	for i := range services {
-		name := services[i].Spec.Name
-		id := services[i].ID
-		fmt.Printf("%s \t %s\n", id, name)
-	}
-	return nil
 }
 
-// QueryServiceContainers - This takes a query struct and builds output
-func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
+// GetServiceTasks - This returns all tasks associated with a service
+func (c *Client) GetServiceTasks(serviceName string) ([]swarm.Task, error) {
 
 	// Build JSON object => e.g. {"service": ["task_test"]}
 
 	// TODO - this is a hack as html.escapestring() wont escape "{}:"
 	beginEncode := "%7B%22service%22%3A%5B%22"
 	endEncode := "%22%5D%7D"
-	encodeString := beginEncode + q.ServiceName + endEncode
+	encodeString := beginEncode + serviceName + endEncode
 
 	url := fmt.Sprintf("%s/tasks?filters=%s", c.UCPURL, encodeString)
 
@@ -87,86 +81,62 @@ func (c *Client) QueryServiceContainers(q *ServiceQuery) error {
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		//TODO - Must be a nicer method for this
+		ParseUCPError(response)
+		return nil, err
 	}
 
 	var tasks []swarm.Task
 
 	err = json.Unmarshal(response, &tasks)
 	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
+
+// ReapFailedTasks - This returns all tasks associated with a service
+func (c *Client) ReapFailedTasks(serviceName string, rmvol, kill bool) error {
+
+	tasks, err := c.GetServiceTasks(serviceName)
+	if err != nil {
 		return err
 	}
 
-	log.Debugf("Found %d tasks for service %s", len(tasks), q.ServiceName)
+	log.Debugf("Found %d tasks, finding tasks in \"failed\" status", len(tasks))
 
-	// Loop through all networks in the array
+	if len(tasks) == 0 {
+		return fmt.Errorf("No tasks found for service [%s]", serviceName)
+	}
+
+	var failedTasks []string
+
 	for i := range tasks {
-
-		// Print task ID
-		if q.ID {
-			task := tasks[i].Status.ContainerStatus.ContainerID
-			if q.Resolve {
-				resolvedTask, err := c.GetContainerFromID(task)
-				if err != nil {
-					// Usually we return from all errors, however we may have lost container IDs
-					ParseUCPError([]byte(err.Error()))
-					// continue goes to the next loop
-					continue
-				} else {
-					fmt.Printf("%s\t", resolvedTask.Name)
-				}
-			} else {
-				fmt.Printf("%s\t", task)
+		if tasks[i].Status.State == "failed" {
+			// Look for an existing container that matches the ID
+			_, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
+			// If we find one, we know that it exists and can be added to be reaped
+			if err == nil {
+				failedTasks = append(failedTasks, tasks[i].Status.ContainerStatus.ContainerID)
 			}
 		}
+	}
 
-		// Above query will have cached the results if the container was found
-		if q.Node {
-			containerNode, err := c.GetContainerFromID(tasks[i].Status.ContainerStatus.ContainerID)
-			if err != nil {
-				// Usually we return from all errors, however we may have lost container IDs
-				ParseUCPError([]byte(err.Error()))
-				// continue goes to the next loop
-				continue
-			} else {
-				fmt.Printf("%s\t", containerNode.Node.Name)
-			}
-		}
+	if len(failedTasks) == 0 {
+		log.Info("No tasks in a \"failed\" state")
+	}
 
-		// Print all networks attached to task (Only if attachements exist)
-		if q.Networks && len(tasks[i].NetworksAttachments) != 0 {
-			var networkString string
-			for n := range tasks[i].NetworksAttachments {
-				for a := range tasks[i].NetworksAttachments[n].Addresses {
+	for i := range failedTasks {
+		fmt.Printf("Removing %s\n", failedTasks[i])
 
-					address := tasks[i].NetworksAttachments[n].Addresses[a]
-					networkID := tasks[i].NetworksAttachments[n].Network.ID
+		// DELETE CODE GOES HERE
 
-					// build output from query
-					if q.Resolve {
-						resolvedNetwork, err := c.GetNetworkFromID(networkID)
-						if err != nil {
-							return err
-						}
-						// Build from resolved name
-						networkString = networkString + address + "\t" + resolvedNetwork.Name + "\t"
-					} else {
-						// Build from UUID name
-						networkString = networkString + address + "\t" + networkID + "\t"
-					}
-				}
-			}
-			fmt.Printf("%s", networkString)
-		} else {
-			fmt.Printf("Unattached\t")
-		}
+		// url := fmt.Sprintf("%s/services/%s", c.UCPURL, failedTasks[i])
+		// _, err = c.delRequest(url, nil)
+		// if err != nil {
+		// 	return err
+		// }
 
-		if q.State {
-			fmt.Printf("%s\t", tasks[i].Status.State)
-		}
-
-		// Create a newline for the next task
-		fmt.Printf("\n")
 	}
 
 	return nil
