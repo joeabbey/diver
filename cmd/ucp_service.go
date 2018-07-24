@@ -21,6 +21,7 @@ func init() {
 
 	ucpServiceGetTasks.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 	ucpServiceGetTasks.Flags().BoolVar(&colour, "colour", false, "Use Colour in Task output")
+	ucpServiceGetHealth.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
 	// Query options
 	ucpServiceList.Flags().BoolVar(&svc.ID, "id", false, "Display task ID")
@@ -39,6 +40,7 @@ func init() {
 	UCPRoot.AddCommand(ucpService)
 
 	ucpServiceGet.AddCommand(ucpServiceGetTasks)
+	ucpServiceGet.AddCommand(ucpServiceGetHealth)
 
 	// Add reap to service subcommands
 	ucpService.AddCommand(ucpServiceList)
@@ -91,6 +93,77 @@ var ucpServiceGet = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 		cmd.Help()
+	},
+}
+
+var ucpServiceGetHealth = &cobra.Command{
+	Use:   "health",
+	Short: "Retrieve the health of a service or all services",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+
+		services, err := client.GetAllServices()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		// Find the specific service and output the health
+
+		if svc.ServiceName != "" {
+			for i := range services {
+				if services[i].Spec.Name == svc.ServiceName {
+					// Service has been found, get the tasks
+					tasks, err := client.GetServiceTasks(svc.ServiceName)
+					if err != nil {
+						log.Fatalf("%v", err)
+					}
+
+					var running, failed, shutdown int
+
+					for x := range tasks {
+						// Loop through the tasks and work out the health
+						log.Debugf("%s")
+						switch tasks[x].Status.State {
+						case "running":
+							running++
+						case "failed":
+							failed++
+						case "shutdown":
+							shutdown++
+						}
+					}
+
+					w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+					fmt.Fprintln(w, "Service\tExpected\tRunning\tShutdown\tFailed\tTasks\tStatus")
+
+					// Check if Replica or Global Service
+
+					if services[i].Spec.Mode.Replicated != nil && services[i].Spec.Mode.Replicated.Replicas != nil {
+						fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%d\t%d\n", svc.ServiceName,
+							*services[i].Spec.Mode.Replicated.Replicas,
+							running,
+							shutdown,
+							failed,
+							len(tasks))
+					} else {
+						fmt.Fprintf(w, "%s\t---\t%d\t%d\t%d\t%d\n", svc.ServiceName,
+							running,
+							shutdown,
+							failed,
+							len(tasks))
+					}
+
+					w.Flush()
+					return
+				}
+			}
+			log.Fatalf("Service [%s] couldn't be found", svc.ServiceName)
+		}
+
 	},
 }
 
@@ -166,7 +239,7 @@ var ucpServiceGetTasks = &cobra.Command{
 							return
 						}
 						// Build from resolved name
-						networkString = networkString + address + "\t" + resolvedNetwork.Name + "\t"
+						networkString = networkString + address + "  " + resolvedNetwork.Name + "  "
 					}
 				}
 				fmt.Fprintf(w, "%s", networkString)
