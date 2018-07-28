@@ -91,3 +91,11 @@ type CollectionLabelConstraints struct {
 	LabelValue string `json:"label_value"`
 	Type       string `json:"type"`
 }
+
+// InterlockConfig - configuration for Interlock layer 7 routing
+type InterlockConfig struct {
+	HTTPPort         int    `json:"HTTPPort"`
+	HTTPSPort        int    `json:"HTTPSPort"`
+	Arch             string `json:"Arch"`
+	InterlockEnabled bool   `json:"InterlockEnabled"`
+}
