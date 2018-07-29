@@ -99,3 +99,17 @@ type InterlockConfig struct {
 	Arch             string `json:"Arch"`
 	InterlockEnabled bool   `json:"InterlockEnabled"`
 }
+
+// ClientBundles - defines a client bundle list response
+type ClientBundles struct {
+	AccountPublicKeys []struct {
+		ID           string `json:"id"`
+		AccountID    string `json:"accountID"`
+		PublicKey    string `json:"publicKey"`
+		Label        string `json:"label"`
+		Certificates []struct {
+			Label string `json:"label"`
+			Cert  string `json:"cert"`
+		} `json:"certificates"`
+	} `json:"accountPublicKeys"`
+}
