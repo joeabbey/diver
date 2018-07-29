@@ -130,3 +130,23 @@ func (c *Client) SetCollection(collectionID string, constraint *ucptypes.Collect
 	}
 	return nil
 }
+
+// SetDefaultCollection - This will get all accounts
+func (c *Client) SetDefaultCollection(collectionID, user string) error {
+
+	// Create a temporary struct with the correct JSON schema
+	var collection struct {
+		ID string `json:"id"`
+	}
+	collection.ID = collectionID
+
+	b, err := json.Marshal(collection)
+	url := fmt.Sprintf("%s/defaultCollection/%s", c.UCPURL, user)
+
+	response, err := c.putRequest(url, b)
+	if err != nil {
+		ParseUCPError(response)
+		return err
+	}
+	return nil
+}

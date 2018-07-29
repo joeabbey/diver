@@ -26,11 +26,13 @@ func init() {
 	ucpCollectionsDelete.Flags().StringVar(&name, "id", "", "ID of the collection to delete")
 
 	ucpCollectionsSet.Flags().StringVar(&name, "id", "", "The ID of the collection to update")
-
 	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelKey, "key", "", "The label Key")
 	ucpCollectionsSet.Flags().StringVar(&newConstraint.LabelValue, "value", "", "The label value")
 	ucpCollectionsSet.Flags().StringVar(&newConstraint.Type, "type", "", "Type is either a \"node\" or \"engine\" constraint")
 	ucpCollectionsSet.Flags().BoolVar(&newConstraint.Equality, "equals", true, "The constraint is that the key \"equals\" the value")
+
+	ucpCollectionsSetDefault.Flags().StringVar(&collection, "collection", "", "ID of the collection to add a user to")
+	ucpCollectionsSetDefault.Flags().StringVar(&id, "user", "", "ID of the User to add to a collection")
 
 	ucpAuth.AddCommand(ucpCollections)
 
@@ -41,6 +43,8 @@ func init() {
 		ucpCollections.AddCommand(ucpCollectionsSet)
 		ucpCollections.AddCommand(ucpCollectionsCreate)
 		ucpCollections.AddCommand(ucpCollectionsDelete)
+		ucpCollections.AddCommand(ucpCollectionsSetDefault)
+
 	}
 }
 
@@ -198,5 +202,31 @@ var ucpCollectionsSet = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		log.Infof("Succesfully updated collection [%s]", name)
+	},
+}
+
+var ucpCollectionsSetDefault = &cobra.Command{
+	Use:   "default",
+	Short: "Set the default collection for a user",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if collection == "" {
+			cmd.Help()
+			log.Fatalf("No collection specified")
+		}
+		if id == "" {
+			cmd.Help()
+			log.Fatalf("No username/id specified")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.SetDefaultCollection(collection, id)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully set user [%s] to use collection [%s]", id, collection)
 	},
 }
