@@ -21,13 +21,13 @@ func networkIDCache(id string) *types.NetworkResource {
 }
 
 //GetNetworks -
-func (c *Client) GetNetworks() error {
+func (c *Client) GetNetworks() ([]types.NetworkResource, error) {
 
 	url := fmt.Sprintf("%s/networks", c.UCPURL)
 
 	response, err := c.getRequest(url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// We will get an array of networks from the API call
@@ -36,17 +36,11 @@ func (c *Client) GetNetworks() error {
 	log.Debugf("Parsing all networks")
 	err = json.Unmarshal(response, &networks)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.Debugf("Found %d networks", len(networks))
 
-	// Loop through all networks in the array
-	for i := range networks {
-		name := networks[i].Name
-		id := networks[i].ID
-		fmt.Printf("%s \t %s\n", id, name)
-	}
-	return nil
+	return networks, nil
 }
 
 // GetNetworkFromID - this will find a container and return it's struct

@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"text/tabwriter"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/thebsdbox/diver/pkg/ucp"
@@ -32,10 +36,19 @@ var ucpNetworkList = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-		err = client.GetNetworks()
+		networks, err := client.GetNetworks()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+
+		fmt.Fprintf(w, "Name\tID\n")
+
+		for i := range networks {
+			fmt.Fprintf(w, "%s\t%s\n", networks[i].Name, networks[i].ID)
+		}
+		w.Flush()
 	},
 }
 
