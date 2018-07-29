@@ -33,7 +33,6 @@ func init() {
 
 	UCPRoot.AddCommand(ucpContainer)
 	UCPRoot.AddCommand(ucpCliBundle)
-	UCPRoot.AddCommand(ucpNetwork)
 	UCPRoot.AddCommand(ucpLogin)
 
 	// Sub commands
@@ -151,24 +150,5 @@ var ucpCliBundle = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-	},
-}
-
-var ucpNetwork = &cobra.Command{
-	Use:   "network",
-	Short: "Interact with container networks",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-
-		client, err := ucp.ReadToken()
-		if err != nil {
-			// Fatal error if can't read the token
-			log.Fatalf("%v", err)
-		}
-
-		err = client.GetNetworks()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
 	},
 }
