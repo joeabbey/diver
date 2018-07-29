@@ -80,6 +80,7 @@ var ucpNetworkAttach = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+		log.Infof("Succesfully added [%s] to Network [%s]", containerID, id)
 	},
 }
 
@@ -106,6 +107,6 @@ var ucpNetworkDetach = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
-		log.Info("Succesfully removed [%s] from Network [%s]", containerID, id)
+		log.Infof("Succesfully removed [%s] from Network [%s]", containerID, id)
 	},
 }
