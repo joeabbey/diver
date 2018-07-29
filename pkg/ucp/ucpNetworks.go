@@ -104,13 +104,28 @@ func (c *Client) NetworkConnectContainer(containerID, networkID, ipv4, ipv6 stri
 		Container      string `json:"Container"`
 		EndpointConfig struct {
 			IPAMConfig struct {
-				IPv4Address string `json:"IPv4Address"`
-				IPv6Address string `json:"IPv6Address"`
+				IPv4Address string `json:"IPv4Address,omitempty"`
+				IPv6Address string `json:"IPv6Address,omitempty"`
 			} `json:"IPAMConfig"`
 		} `json:"EndpointConfig"`
 	}
 
 	spec.Container = containerID
 	spec.EndpointConfig.IPAMConfig.IPv4Address = ipv4
+	spec.EndpointConfig.IPAMConfig.IPv6Address = ipv6
+
+	b, err := json.Marshal(spec)
+
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("%s/networks/%s/connect", c.UCPURL, networkID)
+
+	response, err := c.postRequest(url, b)
+	if err != nil {
+		ParseUCPError(response)
+		return err
+	}
 	return nil
 }

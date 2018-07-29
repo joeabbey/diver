@@ -10,9 +10,24 @@ import (
 	"github.com/thebsdbox/diver/pkg/ucp"
 )
 
+var force bool
+var containerID, addressv4, addressv6 string
+
 func init() {
 
+	ucpNetworkAttach.Flags().StringVar(&id, "id", "", "ID of the network")
+	ucpNetworkAttach.Flags().StringVar(&containerID, "container", "", "ID/Name of the container")
+	ucpNetworkAttach.Flags().StringVar(&addressv4, "ipv4", "", "The IPv4 address to give the container on the network")
+	ucpNetworkAttach.Flags().StringVar(&addressv6, "ipv6", "", "The IPv6 address to give the container on the network")
+
+	ucpNetworkDetach.Flags().StringVar(&id, "id", "", "ID of the network")
+	ucpNetworkDetach.Flags().StringVar(&containerID, "container", "", "ID/Name of the container")
+	ucpNetworkDetach.Flags().BoolVar(&force, "force", false, "Force the removal of the container from the network")
+
 	ucpNetwork.AddCommand(ucpNetworkList)
+	ucpNetwork.AddCommand(ucpNetworkAttach)
+	ucpNetwork.AddCommand(ucpNetworkDetach)
+
 	UCPRoot.AddCommand(ucpNetwork)
 }
 
@@ -42,9 +57,7 @@ var ucpNetworkList = &cobra.Command{
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
-
 		fmt.Fprintf(w, "Name\tID\n")
-
 		for i := range networks {
 			fmt.Fprintf(w, "%s\t%s\n", networks[i].Name, networks[i].ID)
 		}
@@ -63,7 +76,10 @@ var ucpNetworkAttach = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
-		client.NetworkConnectContainer("", "", "", "")
+		err = client.NetworkConnectContainer(containerID, id, addressv4, addressv6)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 	},
 }
 
@@ -73,11 +89,23 @@ var ucpNetworkDetach = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 
+		if id == "" {
+			log.Fatalf("No network ID has been specified")
+		}
+
+		if containerID == "" {
+			log.Fatalf("No container ID has been specified")
+		}
+
 		client, err := ucp.ReadToken()
 		if err != nil {
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
-		client.NetworkConnectContainer("", "", "", "")
+		err = client.NetworkDisconnectContainer(containerID, id, force)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Info("Succesfully removed [%s] from Network [%s]", containerID, id)
 	},
 }

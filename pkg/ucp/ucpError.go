@@ -29,6 +29,7 @@ func ParseUCPError(response []byte) error {
 	}
 
 	// SOMETIMES we get an array, SOMETIMES we get a single object (work out which)
+	log.Debugf("JSON Error Response:\n%s", response)
 	if len(e.Errors) == 0 {
 		// attempt to unmarshall a single error TODO -WTF is with the random responses
 		err := json.Unmarshal([]byte(response), &r)
