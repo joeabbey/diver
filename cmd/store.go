@@ -13,7 +13,7 @@ import (
 )
 
 var storeClient store.Client
-var id string
+var id, version string
 var firstActive, trialurl, url bool
 
 func init() {
@@ -35,7 +35,11 @@ func init() {
 
 	storeLicensesGet.Flags().StringVar(&id, "subscription", "", "Set which subscription to retrieve the license")
 
+	storeLicensesCVE.Flags().StringVar(&id, "subscription", "", "Set which subscription to retrieve the CVE DB for")
+	storeLicensesCVE.Flags().StringVar(&version, "version", "2", "CVE Schema version (<= DTR 2.2.5: 1, => DTR 2.2.6: 2")
+
 	storeLicenses.AddCommand(storeLicensesGet)
+	storeLicenses.AddCommand(storeLicensesCVE)
 
 	storeCmd.AddCommand(storeLicenses)
 	storeCmd.AddCommand(storeSubscriptions)
@@ -155,6 +159,23 @@ var storeLicensesGet = &cobra.Command{
 			return
 		}
 		existingClient.GetLicense(id)
+	},
+}
+
+var storeLicensesCVE = &cobra.Command{
+	Use:       "cve",
+	Short:     "Retrieve the CVE database",
+	ValidArgs: []string{"1", "2"},
+	Args:      cobra.OnlyValidArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		existingClient, err := store.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			cmd.Help()
+			log.Warn("Unable to find existing session, please login")
+			return
+		}
+		existingClient.GetCVEDatabase(id, version)
 	},
 }
 
