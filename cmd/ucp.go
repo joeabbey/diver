@@ -27,16 +27,7 @@ func init() {
 
 	ucpLogin.Flags().BoolVar(&ucpClient.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
-	// Container flags
-	ucpContainer.Flags().IntVar(&logLevel, "logLevel", 4, "Set the logging level [0=panic, 3=warning, 5=debug]")
-	ucpContainer.Flags().BoolVar(&top, "top", false, "Enable TOP for watching running containers")
-
-	UCPRoot.AddCommand(ucpContainer)
 	UCPRoot.AddCommand(ucpLogin)
-
-	// Sub commands
-	ucpContainer.AddCommand(ucpContainerTop)
-	ucpContainer.AddCommand(ucpContainerList)
 
 }
 
@@ -86,49 +77,5 @@ var ucpLogin = &cobra.Command{
 			}
 			log.Infof("Succesfully logged into [%s]", ucpClient.UCPURL)
 		}
-	},
-}
-
-var ucpContainer = &cobra.Command{
-	Use:   "containers",
-	Short: "Interact with containers",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-	},
-}
-
-var ucpContainerTop = &cobra.Command{
-	Use:   "top",
-	Short: "A list of containers and their CPU usage like the top command on linux",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-		client, err := ucp.ReadToken()
-		if err != nil {
-			// Fatal error if can't read the token
-			log.Fatalf("%v", err)
-		}
-		err = client.ContainerTop()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
-		return
-	},
-}
-
-var ucpContainerList = &cobra.Command{
-	Use:   "list",
-	Short: "List all containers across all nodes in UCP",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.SetLevel(log.Level(logLevel))
-		client, err := ucp.ReadToken()
-		if err != nil {
-			// Fatal error if can't read the token
-			log.Fatalf("%v", err)
-		}
-		err = client.GetContainerNames()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
-		return
 	},
 }
