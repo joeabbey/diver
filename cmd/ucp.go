@@ -12,22 +12,21 @@ import (
 )
 
 var ucpClient ucp.Client
-
 var importPath, exportPath, action string
-
 var top, exampleFile bool
 
 func init() {
-	diverCmd.AddCommand(UCPRoot)
-
 	ucpLogin.Flags().StringVar(&ucpClient.Username, "username", os.Getenv("UCP_USERNAME"), "Username that has permissions to authenticate to Docker EE")
 	ucpLogin.Flags().StringVar(&ucpClient.Password, "password", os.Getenv("UCP_PASSWORD"), "Password allowing a user to authenticate to Docker EE")
-	ucpLogin.Flags().StringVar(&ucpClient.UCPURL, "url", os.Getenv("UCP_URL"), "URL for Docker EE, e.g. https://10.0.0.1")
+	ucpLogin.Flags().StringVar(&ucpClient.UCPURL, "url", os.Getenv("UCP_URL"), "URL for Docker Universal Control Plane, e.g. https://10.0.0.1")
 	ignoreCert := strings.ToLower(os.Getenv("UCP_INSECURE")) == "true"
 
 	ucpLogin.Flags().BoolVar(&ucpClient.IgnoreCert, "ignorecert", ignoreCert, "Ignore x509 certificate")
 
 	UCPRoot.AddCommand(ucpLogin)
+
+	// Add UCP and subcommands to the main application
+	diverCmd.AddCommand(UCPRoot)
 
 }
 
