@@ -19,8 +19,11 @@ func init() {
 	ucpConfigGet.Flags().StringVar(&id, "id", "", "The ID of Configuration to get")
 	ucpConfigGet.Flags().StringVar(&path, "path", "", "The path to write the configuration to")
 
-	ucpConfig.AddCommand(ucpConfigGet)
+	ucpConfigCreate.Flags().StringVar(&id, "name", "", "The name of Configuration to create")
+	ucpConfigCreate.Flags().StringVar(&path, "path", "", "The path of the configuration to upload")
 
+	ucpConfig.AddCommand(ucpConfigGet)
+	ucpConfig.AddCommand(ucpConfigCreate)
 	ucpConfig.AddCommand(ucpConfigList)
 	UCPRoot.AddCommand(ucpConfig)
 }
@@ -99,5 +102,32 @@ var ucpConfigGet = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		log.Infof("Succesfully written configuration [%s] to [%s]", cfg.Spec.Name, path)
+	},
+}
+
+var ucpConfigCreate = &cobra.Command{
+	Use:   "create",
+	Short: "Create a Docker EE Service Configuration",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		if id == "" {
+			cmd.Help()
+			log.Fatalf("No Configuration Name Specified")
+		}
+
+		if path == "" {
+			cmd.Help()
+			log.Fatalf("No Path to config data Specified")
+		}
+		err = client.CreateConfig(id, path)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully created config [%s] from file [%s]", id, path)
 	},
 }

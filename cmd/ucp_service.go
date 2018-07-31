@@ -387,7 +387,7 @@ var ucpServiceGetConfig = &cobra.Command{
 		}
 		if svc.ServiceName == "" {
 			cmd.Help()
-			log.Fatalf("Please specify either a Service Name")
+			log.Fatalf("Please specify a Service Name")
 		}
 		service, err := client.GetService(svc.ServiceName)
 
