@@ -36,6 +36,9 @@ func init() {
 	// Service Architecture flags
 	ucpServiceArchitecture.Flags().BoolVar(&prevSpec, "previousSpec", false, "Display the previous Service specification")
 
+	// Service Configuration Flags
+	ucpServiceGetConfig.Flags().StringVar(&svc.ServiceName, "name", "", "The name of service to retrieve configurations from")
+
 	// Add Service to UCP root commands
 	UCPRoot.AddCommand(ucpService)
 
@@ -47,6 +50,7 @@ func init() {
 	ucpService.AddCommand(ucpServiceReap)
 	ucpService.AddCommand(ucpServiceArchitecture)
 	ucpService.AddCommand(ucpServiceGet)
+	ucpService.AddCommand(ucpServiceGetConfig)
 
 }
 
@@ -389,141 +393,18 @@ var ucpServiceGetConfig = &cobra.Command{
 
 		if err != nil {
 			ucp.ParseUCPError([]byte(err.Error()))
+			log.Fatalf("Could not retrieve configuration from [%s]", svc.ServiceName)
 			return
 		}
-			service.Spec.TaskTemplate.ContainerSpec.
+		if service.Spec.TaskTemplate.ContainerSpec != nil && service.Spec.TaskTemplate.ContainerSpec.Configs != nil {
+
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+			fmt.Fprintf(w, "Name\tID\tFile\n")
+			for i := range service.Spec.TaskTemplate.ContainerSpec.Configs {
+				fmt.Fprintf(w, "%s\t%s\t%s\n", service.Spec.TaskTemplate.ContainerSpec.Configs[i].ConfigName, service.Spec.TaskTemplate.ContainerSpec.Configs[i].ConfigID, service.Spec.TaskTemplate.ContainerSpec.Configs[i].File.Name)
+			}
+			w.Flush()
+
+		}
 	},
 }
-
-// {
-// 	"ID": "qhg6qgcv6hm58fos2dl64ey43",
-// 	"Version": {
-// 	  "Index": 6794
-// 	},
-// 	"CreatedAt": "2018-05-16T18:24:06.556823733Z",
-// 	"UpdatedAt": "2018-05-23T12:49:09.35299171Z",
-// 	"Spec": {
-// 	  "Name": "urchin",
-// 	  "Labels": {
-// 		"com.docker.ucp.access.label": "/",
-// 		"com.docker.ucp.collection": "swarm",
-// 		"com.docker.ucp.collection.root": "true",
-// 		"com.docker.ucp.collection.swarm": "true"
-// 	  },
-// 	  "TaskTemplate": {
-// 		"ContainerSpec": {
-// 		  "Image": "thebsdbox/urchin:1.2@sha256:fbadb7d721cd9faabdead81323a02deb1a05993e3e60c0762eb249bed2d168d3",
-// 		  "Labels": {
-// 			"com.docker.ucp.access.label": "/",
-// 			"com.docker.ucp.collection": "swarm",
-// 			"com.docker.ucp.collection.root": "true",
-// 			"com.docker.ucp.collection.swarm": "true"
-// 		  },
-// 		  "Command": [
-// 			"/urchin"
-// 		  ],
-// 		  "Args": [
-// 			"-w",
-// 			"8080"
-// 		  ],
-// 		  "DNSConfig": {},
-// 		  "Isolation": "default"
-// 		},
-// 		"Resources": {
-// 		  "Limits": {
-// 			"MemoryBytes": 8388608
-// 		  },
-// 		  "Reservations": {
-// 			"MemoryBytes": 4194304
-// 		  }
-// 		},
-// 		"Placement": {
-// 		  "Constraints": [
-// 			"node.labels.com.docker.ucp.collection.swarm==true",
-// 			"node.labels.com.docker.ucp.orchestrator.swarm==true"
-// 		  ],
-// 		  "Platforms": [
-// 			{
-// 			  "Architecture": "amd64",
-// 			  "OS": "linux"
-// 			}
-// 		  ]
-// 		},
-// 		"ForceUpdate": 0,
-// 		"Runtime": "container"
-// 	  },
-// 	  "Mode": {
-// 		"Replicated": {
-// 		  "Replicas": 40
-// 		}
-// 	  },
-// 	  "EndpointSpec": {
-// 		"Mode": "vip"
-// 	  }
-// 	},
-// 	"PreviousSpec": {
-// 	  "Name": "urchin",
-// 	  "Labels": {
-// 		"com.docker.ucp.access.label": "/",
-// 		"com.docker.ucp.collection": "swarm",
-// 		"com.docker.ucp.collection.root": "true",
-// 		"com.docker.ucp.collection.swarm": "true"
-// 	  },
-// 	  "TaskTemplate": {
-// 		"ContainerSpec": {
-// 		  "Image": "thebsdbox/urchin:1.2@sha256:fbadb7d721cd9faabdead81323a02deb1a05993e3e60c0762eb249bed2d168d3",
-// 		  "Labels": {
-// 			"com.docker.ucp.access.label": "/",
-// 			"com.docker.ucp.collection": "swarm",
-// 			"com.docker.ucp.collection.root": "true",
-// 			"com.docker.ucp.collection.swarm": "true"
-// 		  },
-// 		  "Command": [
-// 			"/urchin"
-// 		  ],
-// 		  "Args": [
-// 			"-w",
-// 			"8080"
-// 		  ],
-// 		  "DNSConfig": {},
-// 		  "Isolation": "default"
-// 		},
-// 		"Resources": {
-// 		  "Limits": {
-// 			"MemoryBytes": 102410241
-// 		  },
-// 		  "Reservations": {}
-// 		},
-// 		"Placement": {
-// 		  "Constraints": [
-// 			"node.labels.com.docker.ucp.collection.swarm==true",
-// 			"node.labels.com.docker.ucp.orchestrator.swarm==true"
-// 		  ],
-// 		  "Platforms": [
-// 			{
-// 			  "Architecture": "amd64",
-// 			  "OS": "linux"
-// 			}
-// 		  ]
-// 		},
-// 		"ForceUpdate": 0,
-// 		"Runtime": "container"
-// 	  },
-// 	  "Mode": {
-// 		"Replicated": {
-// 		  "Replicas": 40
-// 		}
-// 	  },
-// 	  "EndpointSpec": {
-// 		"Mode": "vip"
-// 	  }
-// 	},
-// 	"Endpoint": {
-// 	  "Spec": {}
-// 	},
-// 	"UpdateStatus": {
-// 	  "State": "updating",
-// 	  "StartedAt": "2018-05-23T12:49:09.352973272Z",
-// 	  "Message": "update in progress"
-// 	}
-//   }

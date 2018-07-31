@@ -31,7 +31,7 @@
 
 [[constraint]]
   name = "github.com/docker/docker"
-  version = "1.13.1"
+  revision = "9cf8feebbf9d94629882a14d77a2b73ce3b14b70"
 
 [[constraint]]
   name = "github.com/spf13/cobra"

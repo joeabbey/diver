@@ -2,15 +2,15 @@
 
 
 [[projects]]
-  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
+  digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
 
 [[projects]]
-  digest = "1:3d88b9bc3cc05e300d9ff1006f9dcac7204f9706ca44988ee12723252d37ab62"
+  digest = "1:2f4cb695be52903a44d813dd1ad2cf9cf463b6f2adf4afcb9dee8eb9e625d323"
   name = "github.com/docker/docker"
   packages = [
     "api/types",
@@ -22,26 +22,36 @@
     "api/types/registry",
     "api/types/strslice",
     "api/types/swarm",
+    "api/types/swarm/runtime",
     "api/types/versions",
+    "errdefs",
   ]
   pruneopts = "UT"
-  revision = "092cba3727bb9b4a2f0e922cd6c0f93ea270e363"
-  version = "v1.13.1"
+  revision = "9cf8feebbf9d94629882a14d77a2b73ce3b14b70"
 
 [[projects]]
-  branch = "docker/1.13"
-  digest = "1:87dcb59127512b84097086504c16595cf8fef35b9e0bfca565dfc06e198158d7"
+  digest = "1:ade935c55cd6d0367c843b109b09c9d748b1982952031414740750fdf94747eb"
   name = "github.com/docker/go-connections"
   packages = ["nat"]
   pruneopts = "UT"
-  revision = "ecb4cb2dd420ada7df7f2593d6c25441f65f69f2"
+  revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
+  version = "v0.4.0"
 
 [[projects]]
-  digest = "1:aaf8d8f8ffb92e0c4985a8796655071cb9a1870c585ad50d968f78931b871a98"
+  digest = "1:6f82cacd0af5921e99bf3f46748705239b36489464f4529a1589bc895764fb18"
   name = "github.com/docker/go-units"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8a7beacffa3009a9ac66bad506b18ffdd110cf97"
+  revision = "47565b4f722fb6ceae66b95f853feed578a4a51c"
+  version = "v0.3.3"
+
+[[projects]]
+  digest = "1:bbadccf3d3317ea03c0dac0b45b673b4b397c8f91a1d2eff550a3c51c4ad770e"
+  name = "github.com/gogo/protobuf"
+  packages = ["proto"]
+  pruneopts = "UT"
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
@@ -50,6 +60,25 @@
   pruneopts = "UT"
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
+
+[[projects]]
+  digest = "1:ee4d4af67d93cc7644157882329023ce9a7bcfce956a079069a9405521c7cc8d"
+  name = "github.com/opencontainers/go-digest"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "279bed98673dd5bef374d3b6e4b09e2af76183bf"
+  version = "v1.0.0-rc1"
+
+[[projects]]
+  digest = "1:7c5c09ec84d18b0dc5ec0de36c1b8d12d3bf1815d04b90dc50ab082f3b8f13f1"
+  name = "github.com/opencontainers/image-spec"
+  packages = [
+    "specs-go",
+    "specs-go/v1",
+  ]
+  pruneopts = "UT"
+  revision = "d60099175f88c47cd379c4738d158884749ed235"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:872fa275c31e1f9db31d66fa9b1d4a7bb9a080ff184e6977da01f36bfbe07f11"
@@ -73,18 +102,18 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "a2144134853fc9a27a7b1e3eb4f19f1a76df13c9"
+  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
 
 [[projects]]
   branch = "master"
-  digest = "1:72d6244a51be9611f08994aca19677fcc31676b3e7b742c37e129e6ece4ad8fc"
+  digest = "1:0871b2afdec96b08397ac286e7dbd2a0875bb75c1d3b22d046e389b9ed68cd83"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
+  revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
 
 [solve-meta]
   analyzer-name = "dep"

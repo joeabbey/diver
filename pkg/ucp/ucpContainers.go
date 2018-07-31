@@ -131,7 +131,7 @@ func (c *Client) ContainerTop() error {
 }
 
 //GetContainerProcesses - Returns all containers in the cluster
-func (c *Client) GetContainerProcesses(id string) (*ucptypes.ContainerProccesses, error) {
+func (c *Client) GetContainerProcesses(id string) (*ucptypes.ContainerProcesses, error) {
 	log.Debugf("Retrieving processers from container")
 	url := fmt.Sprintf("%s/containers/%s/top?ps_args=-ef", c.UCPURL, id)
 
@@ -139,7 +139,7 @@ func (c *Client) GetContainerProcesses(id string) (*ucptypes.ContainerProccesses
 	if err != nil {
 		return nil, err
 	}
-	var processList ucptypes.ContainerProccesses
+	var processList ucptypes.ContainerProcesses
 
 	err = json.Unmarshal(response, &processList)
 	if err != nil {

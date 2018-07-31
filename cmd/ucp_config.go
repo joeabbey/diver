@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"text/tabwriter"
 
@@ -10,12 +12,15 @@ import (
 	"github.com/thebsdbox/diver/pkg/ucp"
 )
 
+var path string
+
 func init() {
 
-	// UCP ORG Flags
-	//ucpAuthOrgCreate.Flags().StringVar(&auth.Name, "name", "", "A unique Organisation name")
+	ucpConfigGet.Flags().StringVar(&id, "id", "", "The ID of Configuration to get")
+	ucpConfigGet.Flags().StringVar(&path, "path", "", "The path to write the configuration to")
 
-	//ucpAuthOrgDelete.Flags().StringVar(&auth.Name, "name", "", "Existing Organisation")
+	ucpConfig.AddCommand(ucpConfigGet)
+
 	ucpConfig.AddCommand(ucpConfigList)
 	UCPRoot.AddCommand(ucpConfig)
 }
@@ -54,5 +59,45 @@ var ucpConfigList = &cobra.Command{
 		}
 		w.Flush()
 
+	},
+}
+
+var ucpConfigGet = &cobra.Command{
+	Use:   "get",
+	Short: "Retrieve a Docker EE Service Configuration",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		if id == "" {
+			cmd.Help()
+			log.Fatalf("No Configuration ID Specified")
+		}
+
+		if path == "" {
+			cmd.Help()
+			log.Fatalf("No Path to save config data Specified")
+		}
+
+		cfg, err := client.GetConfig(id)
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+
+		data, err := base64.StdEncoding.DecodeString(cfg.Spec.Data)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		err = ioutil.WriteFile(path, data, 0644)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully written configuration [%s] to [%s]", cfg.Spec.Name, path)
 	},
 }
