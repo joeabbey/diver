@@ -113,3 +113,9 @@ type ClientBundles struct {
 		} `json:"certificates"`
 	} `json:"accountPublicKeys"`
 }
+
+// ContainerProccesses - Stuct that defines all Processes in a container
+type ContainerProccesses struct {
+	Processes [][]string `json:"Processes"`
+	Titles    []string   `json:"Titles"`
+}
