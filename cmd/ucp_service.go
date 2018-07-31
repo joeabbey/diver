@@ -371,6 +371,30 @@ func printServiceSpec(service *swarm.Service, spec *swarm.ServiceSpec) {
 
 }
 
+var ucpServiceGetConfig = &cobra.Command{
+	Use:   "config",
+	Short: "Retrieve the config used by a service",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		if svc.ServiceName == "" {
+			cmd.Help()
+			log.Fatalf("Please specify either a Service Name")
+		}
+		service, err := client.GetService(svc.ServiceName)
+
+		if err != nil {
+			ucp.ParseUCPError([]byte(err.Error()))
+			return
+		}
+			service.Spec.TaskTemplate.ContainerSpec.
+	},
+}
+
 // {
 // 	"ID": "qhg6qgcv6hm58fos2dl64ey43",
 // 	"Version": {
