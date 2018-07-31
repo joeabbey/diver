@@ -37,6 +37,7 @@ Flags:
 - Download client bundle
 - Inspect Services (Endpoints coming soon)
 - Manage Swarm configuration
+- Attach/Detach containers from networks
 
 .. More coming
 
@@ -51,7 +52,7 @@ Flags:
 
 .. More coming
 
-	**[STORE](./store)**
+**[STORE](./store)**
 
 - Login
 - Retrieve Subscriptions
