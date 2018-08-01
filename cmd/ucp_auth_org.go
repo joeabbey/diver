@@ -109,8 +109,7 @@ var ucpAuthOrgList = &cobra.Command{
 		}
 		log.Debugf("Found %d Accounts", len(orgs.Accounts))
 
-		const padding = 3
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', 0)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 
 		fmt.Fprintf(w, "Org Name\tID\tFullname\n")
 

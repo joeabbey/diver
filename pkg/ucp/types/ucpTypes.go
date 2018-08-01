@@ -114,8 +114,25 @@ type ClientBundles struct {
 	} `json:"accountPublicKeys"`
 }
 
-// ContainerProccesses - Stuct that defines all Processes in a container
-type ContainerProccesses struct {
+// ContainerProcesses - Struct that defines all Processes in a container
+type ContainerProcesses struct {
 	Processes [][]string `json:"Processes"`
 	Titles    []string   `json:"Titles"`
+}
+
+// ServiceConfig - Used to interact with configurations applied to services
+type ServiceConfig struct {
+	ID      string `json:"ID"`
+	Version struct {
+		Index int `json:"Index"`
+	} `json:"Version"`
+	CreatedAt time.Time `json:"CreatedAt"`
+	UpdatedAt time.Time `json:"UpdatedAt"`
+	Spec      struct {
+		Name   string `json:"Name"`
+		Labels struct {
+			Label []map[string]string
+		} `json:"Labels"`
+		Data string `json:"Data"`
+	} `json:"Spec"`
 }
