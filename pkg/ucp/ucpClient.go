@@ -62,7 +62,7 @@ func (c *Client) Connect() error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("%v", string(response))
+	log.Debugf("%s", response)
 
 	var responseData map[string]interface{}
 	err = json.Unmarshal(response, &responseData)
@@ -330,10 +330,12 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	}
 }
 
-type internal struct {
+//ClientSession - returns everything needed to interact with UCP
+type ClientSession struct {
 	UCPAddress string `json:"address"`
 	Token      string `json:"token"`
 	IgnoreCert bool   `json:"ignoreCert"`
+	Active     bool   `json:"active"`
 }
 
 // WriteToken - Writes a copy of the token to the
@@ -343,17 +345,48 @@ func (c *Client) WriteToken() error {
 		return fmt.Errorf("Not logged in, or no UCP token present")
 	}
 
+	// Retrieve existing tokens, to update an existing or append a new session
+
+	clientTokens, err := ReadAllClients()
+	if err != nil {
+		// An error here could be related to no existing login or corrupted file
+		log.Debugf("%v", err)
+	}
+
 	// build path
 	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
 	log.Debugf("Writing Token to [%s]", path)
 
-	clientToken := internal{
+	clientToken := ClientSession{
 		UCPAddress: c.UCPURL,
 		Token:      c.Token,
 		IgnoreCert: c.IgnoreCert,
+		Active:     true,
 	}
 
-	b, err := json.Marshal(clientToken)
+	var found bool
+
+	for i := range clientTokens {
+		// Ensure all tokens are disabled
+		clientTokens[i].Active = false
+		if clientTokens[i].UCPAddress == c.UCPURL {
+			// If the session already exists update the token
+			clientTokens[i].Token = c.Token
+			// Enable this one as it has been updated
+			clientTokens[i].Active = true
+
+			found = true
+			log.Infoln("Updating existing session")
+		}
+	}
+
+	if found != true {
+		clientTokens = append(clientTokens, clientToken)
+		log.Infoln("Adding new session")
+
+	}
+
+	b, err := json.Marshal(clientTokens)
 	if err != nil {
 		return err
 	}
@@ -364,9 +397,10 @@ func (c *Client) WriteToken() error {
 	return nil
 }
 
-// ReadToken - Reads the token from a file
-func ReadToken() (*Client, error) {
-	// build path
+// ReadAllClients - This will read the token file and return all of the clients
+func ReadAllClients() ([]ClientSession, error) {
+
+	var clientArray []ClientSession
 	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
 	log.Debugf("Reading Token from [%s]", path)
 	data, err := ioutil.ReadFile(path)
@@ -374,18 +408,80 @@ func ReadToken() (*Client, error) {
 		return nil, fmt.Errorf("No Session Token could be found, please login")
 	}
 
-	clientToken := internal{}
-
-	err = json.Unmarshal(data, &clientToken)
+	err = json.Unmarshal(data, &clientArray)
 	if err != nil {
 		return nil, fmt.Errorf("Corrupted Session Token, please login")
 	}
 
-	client := &Client{
-		UCPURL:     clientToken.UCPAddress,
-		Token:      clientToken.Token,
-		IgnoreCert: clientToken.IgnoreCert,
+	return clientArray, nil
+}
+
+// ReadToken - Reads the token from a file
+func ReadToken() (*Client, error) {
+
+	// Retrieve all of the client sessions in the token file
+	clientTokens, err := ReadAllClients()
+	if err != nil {
+		return nil, err
 	}
 
-	return client, nil
+	if len(clientTokens) == 0 {
+		return nil, fmt.Errorf("No sessions found, please login")
+	}
+
+	// Find the active session and return it
+	for i := range clientTokens {
+		if clientTokens[i].Active == true {
+			client := &Client{
+				UCPURL:     clientTokens[i].UCPAddress,
+				Token:      clientTokens[i].Token,
+				IgnoreCert: clientTokens[i].IgnoreCert,
+			}
+			return client, nil
+
+		}
+	}
+
+	return nil, fmt.Errorf("No active sessions found, please login")
+
+}
+
+// SetActiveSession - this will set the active session
+func SetActiveSession(sessionID int) error {
+	// Retrieve existing tokens, to update an existing or append a new session
+
+	clientTokens, err := ReadAllClients()
+	if err != nil {
+		// An error here could be related to no existing login or corrupted file
+		log.Debugf("%v", err)
+	}
+
+	// Arrays begin at 0
+	if (len(clientTokens) - 1) < sessionID {
+		return fmt.Errorf("Session ID [%d] doesn't exist", sessionID)
+	}
+
+	// build path
+	path := fmt.Sprintf("%s/.ucptoken", os.Getenv("HOME"))
+	log.Debugf("Writing Token to [%s]", path)
+
+	for i := range clientTokens {
+		// Ensure all tokens are disabled
+		clientTokens[i].Active = false
+		if i == sessionID {
+			// Enable this one as it has been updated
+			clientTokens[i].Active = true
+		}
+	}
+
+	b, err := json.Marshal(clientTokens)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, b, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
