@@ -2,9 +2,13 @@
 
 This is a tool to interact with the APIs of the Docker Enterprise Edition products enabling an end user to provision, manage and monitor the platform. 
 
+## Downloading
+
+Pre-built `diver` binaries are available on the releases page [https://github.com/thebsdbox/diver/releases](https://github.com/thebsdbox/diver/releases)
+
 ## Building
 
-**QUICK USAGE** From your local machine `go get github.com/thebsdbox/diver`
+**QUICK USAGE** From your local machine `go get github.com/thebsdbox/diver` however you may need to retrieve any dependancies or tooling. 
 
 **Alternatively (or for dev work)**
 Clone the repository and build with `make build`, the `make docker` will a build a local `scratch `container that only has the binary.
