@@ -20,6 +20,7 @@ type Client struct {
 	UCPURL     string
 	IgnoreCert bool
 	Token      string
+	UCPVersion string
 }
 
 // NewBasicAuthClient - Creates a basic client to connecto the UCP
@@ -73,6 +74,23 @@ func (c *Client) Connect() error {
 		c.Token = responseData["auth_token"].(string)
 	} else {
 		return fmt.Errorf("No Authorisation token returned")
+	}
+	url = fmt.Sprintf("%s/version", c.UCPURL)
+	response, err = c.getRequest(url, nil)
+	if err != nil {
+		return err
+	}
+	log.Debugf("%s", response)
+
+	err = json.Unmarshal(response, &responseData)
+	if err != nil {
+		return err
+	}
+	if responseData["Version"] != nil {
+		c.UCPVersion = responseData["Version"].(string)
+		log.Debugf("UCPVersion: %s", c.UCPVersion)
+	} else {
+		log.Warnf("Couldn't determine UCP version")
 	}
 	return nil
 }
@@ -336,6 +354,7 @@ type ClientSession struct {
 	Token      string `json:"token"`
 	IgnoreCert bool   `json:"ignoreCert"`
 	Active     bool   `json:"active"`
+	UCPVersion string `json:"version"`
 }
 
 // WriteToken - Writes a copy of the token to the
@@ -362,6 +381,7 @@ func (c *Client) WriteToken() error {
 		Token:      c.Token,
 		IgnoreCert: c.IgnoreCert,
 		Active:     true,
+		UCPVersion: c.UCPVersion,
 	}
 
 	var found bool
@@ -436,6 +456,7 @@ func ReadToken() (*Client, error) {
 				UCPURL:     clientTokens[i].UCPAddress,
 				Token:      clientTokens[i].Token,
 				IgnoreCert: clientTokens[i].IgnoreCert,
+				UCPVersion: clientTokens[i].UCPVersion,
 			}
 			return client, nil
 
