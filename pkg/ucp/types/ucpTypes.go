@@ -100,6 +100,13 @@ type InterlockConfig struct {
 	InterlockEnabled bool   `json:"InterlockEnabled"`
 }
 
+// HRMConfig - configuration for HRM layer 7 routing
+type HRMConfig struct {
+	HTTPPort  int    `json:"HTTPPort"`
+	HTTPSPort int    `json:"HTTPSPort"`
+	Arch      string `json:"Arch"`
+}
+
 // ClientBundles - defines a client bundle list response
 type ClientBundles struct {
 	AccountPublicKeys []struct {

@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/thebsdbox/diver/pkg/ucp"
@@ -30,7 +32,11 @@ var ucpInterlock = &cobra.Command{
 			// Fatal error if can't read the token
 			log.Fatalf("%v", err)
 		}
-		err = client.ConfigureInterlock(interlockConfig)
+		if strings.HasPrefix(client.UCPVersion, "ucp/2") {
+			err = client.ConfigureHRM(interlockConfig)
+		} else {
+			err = client.ConfigureInterlock(interlockConfig)
+		}
 		if err != nil {
 			// Fatal error if can't configure Interlock
 			log.Fatalf("%v", err)
