@@ -113,3 +113,39 @@ func (c *Client) SetNodeAvailability(id, s string) error {
 	}
 	return nil
 }
+
+//SetNodeRole - Set the node availability (Active/Pause/Drain)
+func (c *Client) SetNodeRole(id, r string) error {
+
+	// Cast the string to a swarm.NodeAvailability type (string)
+	role := swarm.NodeRole(r)
+
+	//check that the state is a known type
+	if role != swarm.NodeRoleManager && role != swarm.NodeRoleWorker {
+		return fmt.Errorf("Unknown node role [%s]", role)
+	}
+
+	log.Debugln("Retrieving information about existing configuration")
+	node, err := c.GetNode(id)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Current Node role [%s], desired role [%s]", node.Spec.Role, role)
+
+	// Update the Node Role
+	node.Spec.Role = role
+
+	b, err := json.Marshal(node.Spec)
+	if err != nil {
+		return err
+	}
+	log.Debugf("%s", b)
+	url := fmt.Sprintf("%s/nodes/%s/update?version=%d", c.UCPURL, id, node.Version.Index)
+
+	response, err := c.postRequest(url, b)
+	if err != nil {
+		ParseUCPError(response)
+		return err
+	}
+	return nil
+}
