@@ -20,21 +20,30 @@ var availability string
 // Set a node to a specific role type
 var role string
 
+// Set a label on a node
+var labelKey, labelValue string
+
 func init() {
+
+	ucpNodesAvailability.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
+	ucpNodesAvailability.Flags().StringVar(&availability, "state", "active", "Node availability [active/drain/pause]")
+
 	ucpNodesGet.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
+
+	ucpNodesLabel.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
+	ucpNodesLabel.Flags().StringVar(&labelKey, "key", "", "The label Key")
+	ucpNodesLabel.Flags().StringVar(&labelValue, "value", "", "The label Value")
 
 	ucpNodesOrchestrator.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
 	ucpNodesOrchestrator.Flags().BoolVar(&orchestratorKube, "kubernetes", false, "Enable Kubernetes to use this node")
 	ucpNodesOrchestrator.Flags().BoolVar(&orchestratorSwarm, "swarm", false, "Enable Swarm to use this node")
-
-	ucpNodesAvailability.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
-	ucpNodesAvailability.Flags().StringVar(&availability, "state", "active", "Node availability [active/drain/pause]")
 
 	ucpNodesRole.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
 	ucpNodesRole.Flags().StringVar(&role, "role", "", "Node role [manager/worker]")
 
 	ucpNodes.AddCommand(ucpNodesAvailability)
 	ucpNodes.AddCommand(ucpNodesGet)
+	ucpNodes.AddCommand(ucpNodesLabel)
 	ucpNodes.AddCommand(ucpNodesList)
 	ucpNodes.AddCommand(ucpNodesOrchestrator)
 	ucpNodes.AddCommand(ucpNodesRole)
@@ -217,6 +226,33 @@ var ucpNodesRole = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
-		log.Infof("Succesfully set node [%s] to state [%s]", id, role)
+		log.Infof("Succesfully set node [%s] to swarm role [%s]", id, role)
+	},
+}
+
+var ucpNodesLabel = &cobra.Command{
+	Use:   "label",
+	Short: "Set a label and value on a node",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if id == "" {
+			cmd.Help()
+			log.Fatalln("No Node ID specified")
+		}
+		if labelKey == "" {
+			cmd.Help()
+			log.Fatalln("No label key has been specified")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.SetNodeLabel(id, labelKey, labelValue)
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully updated node [%s] with the label [%s=%s]", id, labelKey, labelValue)
 	},
 }
