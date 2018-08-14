@@ -14,6 +14,9 @@ import (
 // Used to enable or disable orchestrator type
 var orchestratorKube, orchestratorSwarm bool
 
+// Set a node to a swarm availability state
+var availability string
+
 func init() {
 	ucpNodesGet.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
 
@@ -21,8 +24,12 @@ func init() {
 	ucpNodesOrchestrator.Flags().BoolVar(&orchestratorKube, "kubernetes", false, "Enable Kubernetes to use this node")
 	ucpNodesOrchestrator.Flags().BoolVar(&orchestratorSwarm, "swarm", false, "Enable Swarm to use this node")
 
-	ucpNodes.AddCommand(ucpNodesList)
+	ucpNodesAvailability.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
+	ucpNodesAvailability.Flags().StringVar(&availability, "state", "active", "Node availability [active/drain/pause]")
+
+	ucpNodes.AddCommand(ucpNodesAvailability)
 	ucpNodes.AddCommand(ucpNodesGet)
+	ucpNodes.AddCommand(ucpNodesList)
 	ucpNodes.AddCommand(ucpNodesOrchestrator)
 
 	// Add nodes to UCP root commands
@@ -102,7 +109,7 @@ var ucpNodesGet = &cobra.Command{
 
 var ucpNodesOrchestrator = &cobra.Command{
 	Use:   "orchestrator",
-	Short: "Enable node for different orchestrators",
+	Short: "Configure which orchestrators can utilise a node",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.SetLevel(log.Level(logLevel))
 		if id == "" {
@@ -125,5 +132,29 @@ var ucpNodesOrchestrator = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		log.Infof("Configured Node [%s] to use orchestrator kubernetes=[%t] / swarm=[%t]", id, orchestratorKube, orchestratorSwarm)
+	},
+}
+
+var ucpNodesAvailability = &cobra.Command{
+	Use:   "availability",
+	Short: "Set the node availability [active/drain/pause]",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if id == "" {
+			cmd.Help()
+			log.Fatalln("No Node ID specified")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+
+		err = client.SetNodeAvailability(id, availability)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		log.Infof("Succesfully set node [%s] to state [%s]", id, availability)
 	},
 }
