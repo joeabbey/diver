@@ -21,6 +21,7 @@ func init() {
 
 	ucpServiceGetTasks.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 	ucpServiceGetTasks.Flags().BoolVar(&colour, "colour", false, "Use Colour in Task output")
+
 	ucpServiceGetHealth.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
 	// Query options
@@ -116,58 +117,77 @@ var ucpServiceGetHealth = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		// Find the specific service and output the health
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
+		fmt.Fprintln(w, "Service\tExpected\tPreparing\tRunning\tCompleted\tShutdown\tRejected\tFailed\tTotal Tasks")
 
-		if svc.ServiceName != "" {
-			for i := range services {
-				if services[i].Spec.Name == svc.ServiceName {
-					// Service has been found, get the tasks
-					tasks, err := client.GetServiceTasks(svc.ServiceName)
-					if err != nil {
-						log.Fatalf("%v", err)
-					}
+		//if svc.ServiceName != "" {
+		for i := range services {
 
-					var running, failed, shutdown int
+			// If a service name has been added, then use it and only print if it exists
+			if svc.ServiceName != "" && services[i].Spec.Name != svc.ServiceName {
+				continue
+			}
 
-					for x := range tasks {
-						// Loop through the tasks and work out the health
-						log.Debugf("%s")
-						switch tasks[x].Status.State {
-						case "running":
-							running++
-						case "failed":
-							failed++
-						case "shutdown":
-							shutdown++
-						}
-					}
+			//if  == svc.ServiceName {
+			// Service has been found, get the tasks
+			tasks, err := client.GetServiceTasks(services[i].Spec.Name)
+			if err != nil {
+				log.Fatalf("%v", err)
+			}
 
-					w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
-					fmt.Fprintln(w, "Service\tExpected\tRunning\tShutdown\tFailed\tTasks\tStatus")
+			var running, failed, shutdown, completed, preparing, rejected int
 
-					// Check if Replica or Global Service
-
-					if services[i].Spec.Mode.Replicated != nil && services[i].Spec.Mode.Replicated.Replicas != nil {
-						fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%d\t%d\n", svc.ServiceName,
-							*services[i].Spec.Mode.Replicated.Replicas,
-							running,
-							shutdown,
-							failed,
-							len(tasks))
-					} else {
-						fmt.Fprintf(w, "%s\t---\t%d\t%d\t%d\t%d\n", svc.ServiceName,
-							running,
-							shutdown,
-							failed,
-							len(tasks))
-					}
-
-					w.Flush()
-					return
+			for x := range tasks {
+				// Loop through the tasks and work out the health
+				log.Debugf("%s", tasks[x].Status.State)
+				switch tasks[x].Status.State {
+				case "running":
+					running++
+				case "failed":
+					failed++
+				case "shutdown":
+					shutdown++
+				case "complete":
+					completed++
+				case "preparing":
+					preparing++
+				case "rejected":
+					rejected++
 				}
 			}
-			log.Fatalf("Service [%s] couldn't be found", svc.ServiceName)
-		}
 
+			// Check if Replica or Global Service
+
+			if services[i].Spec.Mode.Replicated != nil && services[i].Spec.Mode.Replicated.Replicas != nil {
+				fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+					services[i].Spec.Name,
+					*services[i].Spec.Mode.Replicated.Replicas,
+					preparing,
+					running,
+					completed,
+					shutdown,
+					rejected,
+					failed,
+					len(tasks))
+			} else {
+				fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+					services[i].Spec.Name,
+					"global",
+					preparing,
+					running,
+					completed,
+					shutdown,
+					rejected,
+					failed,
+					len(tasks))
+			}
+
+		}
+		w.Flush()
+
+		//log.Fatalf("Service [%s] couldn't be found", svc.ServiceName)
+		//}
+		return
 	},
 }
 
