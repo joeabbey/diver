@@ -245,7 +245,7 @@ func (c *Client) delRequest(url string, d []byte) ([]byte, error) {
 
 	bytes, err := c.doRequest(req)
 	if err != nil {
-		return nil, err
+		return bytes, err
 	}
 	return bytes, nil
 }

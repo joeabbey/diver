@@ -149,3 +149,19 @@ func (c *Client) SetNodeRole(id, r string) error {
 	}
 	return nil
 }
+
+//DeleteNode - Set the node availability (Active/Pause/Drain)
+func (c *Client) DeleteNode(id string, force bool) error {
+
+	// Build the URL
+
+	url := fmt.Sprintf("%s/nodes/%s?force=%s", c.UCPURL, id, fmt.Sprintf("%t", force))
+
+	log.Debugf("Built URL [%s]", url)
+	response, err := c.delRequest(url, nil)
+	if err != nil {
+		ParseUCPError(response)
+		return err
+	}
+	return nil
+}
