@@ -1,6 +1,6 @@
 ## Docker Enterprise Edition Servics
 
-### List all services
+### List all services
 
 ```
 $ diver ucp services list urchin
