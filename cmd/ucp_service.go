@@ -116,11 +116,11 @@ var ucpServiceGetHealth = &cobra.Command{
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+
 		// Find the specific service and output the health
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 		fmt.Fprintln(w, "Service\tExpected\tPreparing\tRunning\tCompleted\tShutdown\tRejected\tFailed\tTotal Tasks")
 
-		//if svc.ServiceName != "" {
 		for i := range services {
 
 			// If a service name has been added, then use it and only print if it exists
@@ -128,8 +128,7 @@ var ucpServiceGetHealth = &cobra.Command{
 				continue
 			}
 
-			//if  == svc.ServiceName {
-			// Service has been found, get the tasks
+			// Retrieve all tasks that are part of the service
 			tasks, err := client.GetServiceTasks(services[i].Spec.Name)
 			if err != nil {
 				log.Fatalf("%v", err)
@@ -157,7 +156,6 @@ var ucpServiceGetHealth = &cobra.Command{
 			}
 
 			// Check if Replica or Global Service
-
 			if services[i].Spec.Mode.Replicated != nil && services[i].Spec.Mode.Replicated.Replicas != nil {
 				fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
 					services[i].Spec.Name,
@@ -183,10 +181,8 @@ var ucpServiceGetHealth = &cobra.Command{
 			}
 
 		}
+		// flush output to STDOUT
 		w.Flush()
-
-		//log.Fatalf("Service [%s] couldn't be found", svc.ServiceName)
-		//}
 		return
 	},
 }
