@@ -3,6 +3,8 @@ package store
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -48,14 +50,16 @@ func (c *Client) GetUserInfo(user string) error {
 	if err != nil {
 		return err
 	}
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	fmt.Printf("ID\t%s\n", userInfo.ID)
-	fmt.Printf("Username\t%s\n", userInfo.Username)
-	fmt.Printf("Full Name\t%s\n", userInfo.FullName)
-	fmt.Printf("Location\t%s\n", userInfo.Location)
-	fmt.Printf("Company\t%s\n", userInfo.Company)
-	fmt.Printf("URL\t%s\n", userInfo.URL)
-	fmt.Printf("Type\t%s\n", userInfo.Type)
+	fmt.Fprintf(w, "ID\t%s\n", userInfo.ID)
+	fmt.Fprintf(w, "Username\t%s\n", userInfo.Username)
+	fmt.Fprintf(w, "Full Name\t%s\n", userInfo.FullName)
+	fmt.Fprintf(w, "Location\t%s\n", userInfo.Location)
+	fmt.Fprintf(w, "Company\t%s\n", userInfo.Company)
+	fmt.Fprintf(w, "URL\t%s\n", userInfo.URL)
+	fmt.Fprintf(w, "Type\t%s\n", userInfo.Type)
+	w.Flush()
 
 	return nil
 }
