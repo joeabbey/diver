@@ -28,6 +28,9 @@ func init() {
 	ucpNodesAvailability.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
 	ucpNodesAvailability.Flags().StringVar(&availability, "state", "active", "Node availability [active/drain/pause]")
 
+	ucpNodesDelete.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
+	ucpNodesDelete.Flags().BoolVar(&force, "force", false, "Force the removal of this node")
+
 	ucpNodesGet.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
 
 	ucpNodesLabel.Flags().StringVar(&id, "id", "", "ID of the Docker Node")
@@ -42,6 +45,7 @@ func init() {
 	ucpNodesRole.Flags().StringVar(&role, "role", "", "Node role [manager/worker]")
 
 	ucpNodes.AddCommand(ucpNodesAvailability)
+	ucpNodes.AddCommand(ucpNodesDelete)
 	ucpNodes.AddCommand(ucpNodesGet)
 	ucpNodes.AddCommand(ucpNodesLabel)
 	ucpNodes.AddCommand(ucpNodesList)
@@ -254,5 +258,29 @@ var ucpNodesLabel = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 		log.Infof("Succesfully updated node [%s] with the label [%s=%s]", id, labelKey, labelValue)
+	},
+}
+
+var ucpNodesDelete = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete a Docker node, including removing from UCP (KV/Auth stores etc.)",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+		if id == "" {
+			cmd.Help()
+			log.Fatalln("No Node ID specified")
+		}
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		err = client.DeleteNode(id, force)
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		log.Infof("Succesfully removed node [%s]", id)
+
 	},
 }
