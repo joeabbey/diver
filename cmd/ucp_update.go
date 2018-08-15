@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"text/tabwriter"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -32,28 +30,28 @@ var ucpUpgrade = &cobra.Command{
 			log.Fatalf("%v", err)
 		}
 
+		// Retrieve the current UCP version
+		v, err := client.GetUCPVersion()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+
+		// If the user doesn't specify a particular version then print out current and available versions with the help
 		if ucpversion == "" {
 			cmd.Help()
 			versions, err := client.GetAvailavleUCPVersions()
 			if err != nil {
 				log.Fatalf("%v", err)
 			}
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
-			fmt.Fprintln(w, "\nAvailable Versions")
+			fmt.Printf("\nAvailable Versions\n")
 			for i := range versions {
 
-				fmt.Fprintf(w, "%s\n", versions[i])
+				fmt.Printf("%s\n", versions[i])
 			}
 			fmt.Printf("\n")
-			w.Flush()
+			fmt.Printf("Current Version\n%s\n\n", v)
 
 			log.Fatalln("No --version specified")
-		}
-
-		// Retrieve the current UCP version
-		v, err := client.GetUCPVersion()
-		if err != nil {
-			log.Fatalf("%v", err)
 		}
 
 		log.Infof("Upgrading from [%s] to [%s]", v, ucpversion)
