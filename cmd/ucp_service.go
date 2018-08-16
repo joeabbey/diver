@@ -13,14 +13,14 @@ import (
 
 var svc ucp.ServiceQuery
 
-var prevSpec, colour bool
+var prevSpec, color bool
 
 func init() {
 	// Service flags
 	ucpServiceList.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
 	ucpServiceGetTasks.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
-	ucpServiceGetTasks.Flags().BoolVar(&colour, "colour", false, "Use Colour in Task output")
+	ucpServiceGetTasks.Flags().BoolVar(&color, "color", false, "Use Color in Task output")
 
 	ucpServiceGetHealth.Flags().StringVar(&svc.ServiceName, "name", "", "Examine a service by name")
 
@@ -216,7 +216,7 @@ var ucpServiceGetTasks = &cobra.Command{
 			// Retrieve task ID
 			task := tasks[i].Status.ContainerStatus.ContainerID
 			resolvedTask, err := client.GetContainerFromID(task)
-			if colour {
+			if color {
 				switch tasks[i].Status.State {
 				case "running":
 					fmt.Fprintf(w, "\x1b[32;1m")
