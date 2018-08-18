@@ -14,7 +14,6 @@ import (
 var session int
 
 func init() {
-	diverCmd.AddCommand(UCPRoot)
 
 	ucpLogin.Flags().StringVar(&ucpClient.Username, "username", os.Getenv("UCP_USERNAME"), "Username that has permissions to authenticate to Docker EE")
 	ucpLogin.Flags().StringVar(&ucpClient.Password, "password", os.Getenv("UCP_PASSWORD"), "Password allowing a user to authenticate to Docker EE")
