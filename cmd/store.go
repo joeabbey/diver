@@ -146,9 +146,9 @@ var storeSubscriptionsList = &cobra.Command{
 
 		if !subscriptionsFound {
 			if productOS == "" {
-				fmt.Fprintf(w, "No subscriptions found.\n")
+				log.Fatalln("No subscriptions found.")
 			} else {
-				fmt.Fprintf(w, "No subscriptions found matching: %s.\n", productOS)
+				log.Fatalf("No subscriptions found matching: %s.", productOS)
 			}
 		}
 
