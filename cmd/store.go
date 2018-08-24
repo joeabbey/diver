@@ -13,7 +13,7 @@ import (
 )
 
 var storeClient store.Client
-var id, version string
+var id, version, productOS string
 var firstActive, trialurl, url bool
 
 func init() {
@@ -28,6 +28,7 @@ func init() {
 
 	storeSubscriptionsList.Flags().StringVar(&id, "id", "", "Docker Store ID, by default will take the ID from ~/.storetoken")
 	storeSubscriptionsList.Flags().BoolVar(&firstActive, "firstactive", false, "Retrieve first active subscription")
+	storeSubscriptionsList.Flags().StringVar(&productOS, "os", "", "Only display subscription information for this OS")
 	storeSubscriptionsList.Flags().BoolVar(&trialurl, "trial", false, "Retrieve first active subscription as a trial URL")
 	storeSubscriptionsList.Flags().BoolVar(&url, "url", false, "Retrieve first active subscription as a URL")
 
@@ -94,6 +95,8 @@ var storeSubscriptionsList = &cobra.Command{
 	Use:   "list",
 	Short: "List Docker Store subscriptions",
 	Run: func(cmd *cobra.Command, args []string) {
+		var subscriptionsFound = false
+		var productToMatch = "docker-ee-server-" + strings.ToLower(productOS)
 		log.SetLevel(log.Level(logLevel))
 
 		existingClient, err := store.ReadToken()
@@ -111,6 +114,9 @@ var storeSubscriptionsList = &cobra.Command{
 
 		if firstActive == true || trialurl == true || url == true {
 			for i := range subs {
+				if productOS != "" && subs[i].ProductID != productToMatch {
+					continue
+				}
 				if subs[i].State == "active" {
 					if firstActive {
 						fmt.Printf("%s\n", subs[i].SubscriptionID)
@@ -129,9 +135,21 @@ var storeSubscriptionsList = &cobra.Command{
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
-		fmt.Fprintln(w, "Subscriptiob Name\tSubscription ID\tState")
+		fmt.Fprintln(w, "Subscription Name\tProduct ID\tSubscription ID\tState")
 		for i := range subs {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", subs[i].Name, subs[i].SubscriptionID, subs[i].State)
+			if productOS != "" && subs[i].ProductID != productToMatch {
+				continue
+			}
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", subs[i].Name, subs[i].ProductID, subs[i].SubscriptionID, subs[i].State)
+			subscriptionsFound = true
+		}
+
+		if !subscriptionsFound {
+			if productOS == "" {
+				log.Fatalln("No subscriptions found.")
+			} else {
+				log.Fatalf("No subscriptions found matching: %s.", productOS)
+			}
 		}
 
 		w.Flush()
