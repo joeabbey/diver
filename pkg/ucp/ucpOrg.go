@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
@@ -252,6 +253,7 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 
 	// Parser flags
 	var grantType string
+	var roleID string
 	switch flags {
 	case (ucptypes.GrantCollection):
 		grantType = "collection"
@@ -263,10 +265,36 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 		return fmt.Errorf("Unknown Grant Type")
 	}
 
-	url := fmt.Sprintf("%s/collectionGrants/%s/%s/%s?type=%s", c.UCPURL, subject, collection, role, grantType)
+	matched, err := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", role)
+	if !matched {
+		log.Debugf("Looking up UUID for role: %s", role)
+		//This is not a UUID, let's try to figure out what the UUID should be
+		r, err := c.returnAllRoles()
+		if err != nil {
+			return err
+		}
+
+		//Search (potentially slowly) for the role
+		for i := range r {
+			if r[i].Name == role {
+				log.Debugf("Found UUID: %s", r[i].ID)
+				roleID = r[i].ID
+				break
+			}
+		}
+		if roleID == "" {
+			log.Fatalf("Failed to lookup role: %s.", role)
+		}
+	} else {
+		//Looks like a UUID let's use it
+		log.Debugf("Role appears to already be a UUID: %s", role)
+		roleID = role
+	}
+
+	url := fmt.Sprintf("%s/collectionGrants/%s/%s/%s?type=%s", c.UCPURL, subject, collection, roleID, grantType)
 	log.Debugf("built URL [%s]", url)
 
-	_, err := c.putRequest(url, nil)
+	_, err = c.putRequest(url, nil)
 	if err != nil {
 
 		return err
