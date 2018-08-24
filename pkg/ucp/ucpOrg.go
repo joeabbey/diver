@@ -267,6 +267,7 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 
 	matched, err := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", role)
 	if !matched {
+		log.Debugf("Looking up UUID for role: %s", role)
 		//This is not a UUID, let's try to figure out what the UUID should be
 		r, err := c.returnAllRoles()
 		if err != nil {
@@ -276,7 +277,9 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 		//Search (potentially slowly) for the role
 		for i := range r {
 			if r[i].Name == role {
+				log.Debugf("Found UUID: %s", r[i].ID)
 				roleID = r[i].ID
+				break
 			}
 		}
 		if roleID == "" {
@@ -284,6 +287,7 @@ func (c *Client) SetGrant(collection, role, subject string, flags uint) error {
 		}
 	} else {
 		//Looks like a UUID let's use it
+		log.Debugf("Role appears to already be a UUID: %s", role)
 		roleID = role
 	}
 
