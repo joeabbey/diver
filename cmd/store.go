@@ -135,12 +135,12 @@ var storeSubscriptionsList = &cobra.Command{
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
-		fmt.Fprintln(w, "Subscriptiob Name\tSubscription ID\tState")
+		fmt.Fprintln(w, "Subscription Name\tProduct ID\tSubscription ID\tState")
 		for i := range subs {
 			if productOS != "" && subs[i].ProductID != productToMatch {
 				continue
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\n", subs[i].Name, subs[i].SubscriptionID, subs[i].State)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", subs[i].Name, subs[i].ProductID, subs[i].SubscriptionID, subs[i].State)
 			subscriptionsFound = true
 		}
 
