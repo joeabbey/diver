@@ -73,20 +73,20 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
-  version = "v1.0.1"
+  revision = "9a97c102cda95a86cec2345a6f09f55a939babf5"
+  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/thebsdbox/jd"
   packages = ["lib"]
-  revision = "6f998c6f3ebc6193806d82206c8c3ad5925b1281"
+  revision = "051206cbf5645884fcd1cf796dacb804c6ff1daf"
   version = "v1.1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
 
 [[projects]]
   branch = "master"
@@ -95,7 +95,7 @@
     "unix",
     "windows"
   ]
-  revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
+  revision = "d99a578cf41bfccdeaf48b0845c823a4b8b0ad5e"
 
 [solve-meta]
   analyzer-name = "dep"
