@@ -156,16 +156,20 @@ func (c *Client) GetServiceDifference(serviceName string, pretty bool) (string, 
 		return "", fmt.Errorf("No previous service spec")
 	}
 
+	// Retrieve the two spec JSON objects
 	spec, err := json.Marshal(svc.Spec)
 	if err != nil {
 		return "", err
 	}
+
 	prevspec, err := json.Marshal(svc.PreviousSpec)
 	if err != nil {
 		return "", err
 	}
 
+	log.Debugln("Both Specifications have been unmarshalled, performing a diff on them")
 	a, _ := diff.ReadJsonString(string(spec))
 	b, _ := diff.ReadJsonString(string(prevspec))
+
 	return b.Diff(a).Render(pretty), nil
 }
