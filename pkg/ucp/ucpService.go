@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	diff "github.com/thebsdbox/jd/lib"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types/swarm"
 )
@@ -140,4 +142,34 @@ func (c *Client) ReapFailedTasks(serviceName string, rmvol, kill bool) error {
 	}
 
 	return nil
+}
+
+//GetServiceDifference - This will compare a service spec and previous spec and output the differences
+func (c *Client) GetServiceDifference(serviceName string, pretty bool) (string, error) {
+
+	svc, err := c.GetService(serviceName)
+	if err != nil {
+		return "", err
+	}
+
+	if svc.PreviousSpec == nil {
+		return "", fmt.Errorf("No previous service spec")
+	}
+
+	// Retrieve the two spec JSON objects
+	spec, err := json.Marshal(svc.Spec)
+	if err != nil {
+		return "", err
+	}
+
+	prevspec, err := json.Marshal(svc.PreviousSpec)
+	if err != nil {
+		return "", err
+	}
+
+	log.Debugln("Both Specifications have been unmarshalled, performing a diff on them")
+	a, _ := diff.ReadJsonString(string(spec))
+	b, _ := diff.ReadJsonString(string(prevspec))
+
+	return b.Diff(a).Render(pretty), nil
 }

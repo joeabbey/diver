@@ -13,7 +13,7 @@ import (
 
 var svc ucp.ServiceQuery
 
-var prevSpec, color bool
+var prevSpec, color, pretty bool
 
 func init() {
 	// Service flags
@@ -40,6 +40,10 @@ func init() {
 	// Service Configuration Flags
 	ucpServiceGetConfig.Flags().StringVar(&svc.ServiceName, "name", "", "The name of service to retrieve configurations from")
 
+	// Service Difference Flags
+	ucpServiceDiff.Flags().StringVar(&svc.ServiceName, "name", "", "The name of service to compare configurations from")
+	ucpServiceDiff.Flags().BoolVar(&pretty, "pretty", false, "Render JSON changes in a pretty-print format")
+
 	// Add Service to UCP root commands
 	UCPRoot.AddCommand(ucpService)
 
@@ -52,6 +56,7 @@ func init() {
 	ucpService.AddCommand(ucpServiceArchitecture)
 	ucpService.AddCommand(ucpServiceGet)
 	ucpService.AddCommand(ucpServiceGetConfig)
+	ucpService.AddCommand(ucpServiceDiff)
 
 }
 
@@ -335,6 +340,28 @@ var ucpServiceArchitecture = &cobra.Command{
 		}
 
 		printServiceSpec(service, spec)
+	},
+}
+
+var ucpServiceDiff = &cobra.Command{
+	Use:   "diff",
+	Short: "Display the differences between a services current and previous specification",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := ucp.ReadToken()
+		if err != nil {
+			// Fatal error if can't read the token
+			log.Fatalf("%v", err)
+		}
+		if svc.ServiceName == "" {
+			log.Fatalln("No service was specified")
+		}
+		differences, err := client.GetServiceDifference(svc.ServiceName, pretty)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		fmt.Printf("%s", differences)
 	},
 }
 
