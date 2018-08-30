@@ -143,3 +143,34 @@ type ServiceConfig struct {
 		Data string `json:"Data"`
 	} `json:"Spec"`
 }
+
+// LDAPConfig - This is the LDAP configuration struct
+type LDAPConfig struct {
+	ServerURL          string `json:"serverURL"`
+	NoSimplePagination bool   `json:"noSimplePagination"`
+	StartTLS           bool   `json:"startTLS"`
+	RootCerts          string `json:"rootCerts"`
+	TLSSkipVerify      bool   `json:"tlsSkipVerify"`
+	ReaderDN           string `json:"readerDN"`
+	// This isn't returned from the GET as once the password is added it can't be modified
+	ReaderPassword    string         `json:"readerPassword"`
+	AdditionalDomains []interface{}  `json:"additionalDomains"`
+	UserSearchConfigs []SearchConfig `json:"userSearchConfigs"`
+	AdminSyncOpts     struct {
+		EnableSync         bool   `json:"enableSync"`
+		SelectGroupMembers bool   `json:"selectGroupMembers"`
+		GroupDN            string `json:"groupDN"`
+		GroupMemberAttr    string `json:"groupMemberAttr"`
+		SearchBaseDN       string `json:"searchBaseDN"`
+		SearchScopeSubtree bool   `json:"searchScopeSubtree"`
+		SearchFilter       string `json:"searchFilter"`
+	} `json:"adminSyncOpts"`
+	SyncSchedule        string `json:"syncSchedule"`
+	JitUserProvisioning bool   `json:"jitUserProvisioning"`
+}
+
+// SearchConfig - The configuration for a search struct on an LDAP tree
+type SearchConfig struct {
+	UserAttr string `json:"usernameAttr"`
+	BaseDN   string `json:"baseDN"`
+}
