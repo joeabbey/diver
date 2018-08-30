@@ -1,6 +1,10 @@
 # Diver
 
-This is a tool to interact with the APIs of the Docker Enterprise Edition products enabling an end user to provision, manage and monitor the platform. 
+This is a `cli` tool to interact with the APIs of the Docker Enterprise Edition products enabling an end user to manage:
+
+- Docker Universal Control Plane
+- Docker Trusted Registry
+- Docker Store
 
 ## Downloading
 
