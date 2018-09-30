@@ -8,7 +8,7 @@ This is a `cli` tool to interact with the APIs of the Docker Enterprise Edition 
 
 ## Downloading
 
-Pre-built `diver` binaries are available on the releases page [https://github.com/docker/joeabbey/releases](https://github.com/joeabbey/diver/releases)
+Pre-built `diver` binaries are available on the releases page [https://github.com/joeabbey/diver/releases](https://github.com/joeabbey/diver/releases)
 
 ## Building
 
