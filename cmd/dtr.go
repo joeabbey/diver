@@ -8,9 +8,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/dtr"
+	"github.com/joeabbey/diver/pkg/dtr"
 
-	"github.com/thebsdbox/diver/pkg/dtr/types"
+	"github.com/joeabbey/diver/pkg/dtr/types"
 )
 
 var dtrClient dtr.Client

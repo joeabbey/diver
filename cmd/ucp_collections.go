@@ -5,11 +5,11 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/ucp"
+	"github.com/joeabbey/diver/pkg/ucp"
 )
 
 var newCollection ucptypes.Collection

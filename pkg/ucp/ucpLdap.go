@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 //GetLDAPInfo - returns all information about the LDAP configuration

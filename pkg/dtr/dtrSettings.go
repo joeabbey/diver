@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thebsdbox/diver/pkg/dtr/types"
+	"github.com/joeabbey/diver/pkg/dtr/types"
 )
 
 //DTRCreateRepoOnPush - This will toggle the functionality to enable repositories to be created on push

@@ -6,7 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/thebsdbox/diver/pkg/dtr/types"
+	"github.com/joeabbey/diver/pkg/dtr/types"
 )
 
 func (c *Client) dtrClusterStatus() (*dtrtypes.DTRCluster, error) {

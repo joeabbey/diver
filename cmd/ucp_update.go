@@ -6,7 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/ucp"
+	"github.com/joeabbey/diver/pkg/ucp"
 )
 
 // This is the ucp version that we will attempt to upgrade to

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 // GetClientBundle - will download the UCP Client Bundle

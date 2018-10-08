@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 // AuthStatus - will return the current logged in user

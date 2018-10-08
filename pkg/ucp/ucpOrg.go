@@ -8,7 +8,7 @@ import (
 	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 func (c *Client) returnAllRoles() ([]ucptypes.Roles, error) {

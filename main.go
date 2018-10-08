@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/thebsdbox/diver/cmd"
+	"github.com/joeabbey/diver/cmd"
 )
 
 // Version is populated from the Makefile and is tied to the release TAG

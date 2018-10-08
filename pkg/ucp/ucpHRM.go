@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 // ConfigureHRM - This will toggle the functionality to enable Image Scanning

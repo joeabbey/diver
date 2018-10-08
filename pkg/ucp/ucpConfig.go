@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 //ListConfigs - This will return a list of services

@@ -3,7 +3,7 @@ package cmd
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/ucp"
+	"github.com/joeabbey/diver/pkg/ucp"
 )
 
 func init() {

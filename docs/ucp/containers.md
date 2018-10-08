@@ -7,7 +7,7 @@ The `containers list` command will return all containers across the entire clust
 ```
 $ diver ucp containers list
 Name                                                                                           ID                 Image                            Node
-urchin.1.r7it6s218brkbnz427kruhkun                                                             4a49c61d8ecdcc27   thebsdbox/urchin:1.2             docker01
+urchin.1.r7it6s218brkbnz427kruhkun                                                             4a49c61d8ecdcc27   joeabbey/urchin:1.2             docker01
 k8s_tiller_tiller-deploy-7c66b75f7f-rcfjh_kube-system_4c8dc88a-9093-11e8-8455-0242ac11000b_1   a8bef9a7c5b1e0b7   gcr.io/kubernetes-helm/tiller    docker03
 dtr-scanningstore-be6fbea56f0a                                                                 6447966efb48a8a4   docker/dtr-postgres:2.5.2        docker02
 dtr-notary-signer-be6fbea56f0a                                                                 9b55971453765f42   docker/dtr-notary-signer:2.5.2   docker02
@@ -52,7 +52,7 @@ root   2418   1596   0   Jul28   ?     00:00:26   /bin/postgreswrapper
 
 ### Watching Containers
 
-This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/thebsdbox/urchin) to hit memory reservations in the demo below)
+This will present a colour coded output on memory usage of all containers that are running in a swarm cluster.. (using [urchin](http://github.com/joeabbey/urchin) to hit memory reservations in the demo below)
 
 
 ```

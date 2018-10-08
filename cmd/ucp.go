@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/ucp"
+	"github.com/joeabbey/diver/pkg/ucp"
 
 	log "github.com/Sirupsen/logrus"
 )

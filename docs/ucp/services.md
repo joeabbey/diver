@@ -19,7 +19,7 @@ INFO[0000] Inspecting service [urchin]
 ID:        p59zsqz20308wr9p8y9sp7ieg
 Version:   19222
 Name:      urchin
-Image:     thebsdbox/urchin:1.2@sha256:fbadb7d721cd9faabdead81323a02deb1a05993e3e60c0762eb249bed2d168d3
+Image:     joeabbey/urchin:1.2@sha256:fbadb7d721cd9faabdead81323a02deb1a05993e3e60c0762eb249bed2d168d3
 Cmd: /urchin
 Args: -w 8080
 Labels:

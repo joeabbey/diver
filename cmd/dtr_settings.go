@@ -7,7 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/dtr"
+	"github.com/joeabbey/diver/pkg/dtr"
 )
 
 func init() {

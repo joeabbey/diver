@@ -8,7 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/ucp"
+	"github.com/joeabbey/diver/pkg/ucp"
 )
 
 var svc ucp.ServiceQuery

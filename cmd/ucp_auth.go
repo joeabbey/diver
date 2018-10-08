@@ -3,8 +3,8 @@ package cmd
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/diver/pkg/ucp"
-	"github.com/thebsdbox/diver/pkg/ucp/types"
+	"github.com/joeabbey/diver/pkg/ucp"
+	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 
 var auth ucptypes.Account

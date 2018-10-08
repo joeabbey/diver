@@ -9,7 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/thebsdbox/diver/pkg/store"
+	"github.com/joeabbey/diver/pkg/store"
 )
 
 var storeClient store.Client
