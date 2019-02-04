@@ -6,8 +6,8 @@ import (
 	"text/tabwriter"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"github.com/joeabbey/diver/pkg/dtr"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -46,19 +46,19 @@ var dtrSettingsGet = &cobra.Command{
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, tabPadding, ' ', 0)
 		fmt.Fprintln(w, "Configuration\tSetting")
-
+		fmt.Fprintln(w, "[*] configurable setting\t")
 		fmt.Fprintf(w, "DTR Host\t%s\n", settings.DtrHost)
 		fmt.Fprintf(w, "DTR Replica ID\t%s\n", settings.ReplicaID)
 		fmt.Fprintf(w, "SSO\t%t\n", settings.Sso)
-		fmt.Fprintf(w, "Create Repo on Push\t%t\n", settings.CreateRepositoryOnPush)
+		fmt.Fprintf(w, "[*]Create Repo on Push\t%t\n", settings.CreateRepositoryOnPush)
 		fmt.Fprintf(w, "Log Protocol\t%s\n", settings.LogProtocol)
 		fmt.Fprintf(w, "Log Host\t%s\n", settings.LogHost)
 		fmt.Fprintf(w, "Log Level\t%s\n", settings.LogLevel)
 		fmt.Fprintf(w, "Storage Volume\t%s\n", settings.StorageVolume)
 		fmt.Fprintf(w, "NFS Host\t%s\n", settings.NfsHost)
 		fmt.Fprintf(w, "NFS Path\t%s\n", settings.NfsPath)
-		fmt.Fprintf(w, "Scanning Enabled\t%t\n", settings.ScanningEnabled)
-		fmt.Fprintf(w, "Scanning Online Sync\t%t\n", settings.ScanningSyncOnline)
+		fmt.Fprintf(w, "[*]Scanning Enabled\t%t\n", settings.ScanningEnabled)
+		fmt.Fprintf(w, "[*]Scanning Online Sync\t%t\n", settings.ScanningSyncOnline)
 		fmt.Fprintf(w, "Scanning Auto Recheck\t%t\n", settings.ScanningEnableAutoRecheck)
 		w.Flush()
 	},
