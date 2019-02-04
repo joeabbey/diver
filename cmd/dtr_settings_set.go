@@ -2,8 +2,8 @@ package cmd
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"github.com/joeabbey/diver/pkg/dtr"
+	"github.com/spf13/cobra"
 )
 
 var enable bool
@@ -50,6 +50,24 @@ var dtrSettingsScanning = &cobra.Command{
 			// Fatal error if can't return any webhooks
 			log.Fatalf("%v", err)
 
+		}
+	},
+}
+
+var dtrSettingsOnline = &cobra.Command{
+	Use:   "online",
+	Short: "Scanning online sync",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.SetLevel(log.Level(logLevel))
+
+		client, err := dtr.ReadToken()
+		if err != nil {
+			//can't read token
+			log.Fatalf("%v", err)
+		}
+		err = client.DTROnlineScan(enable)
+		if err != nil {
+			log.Fatalf("%v", err)
 		}
 	},
 }

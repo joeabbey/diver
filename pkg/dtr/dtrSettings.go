@@ -54,6 +54,28 @@ func (c *Client) DTRScanningEnable(enabled bool) error {
 	return nil
 }
 
+//DTROnlineScan - This will toggle the functionality to Sync online
+func (c *Client) DTROnlineScan(enabled bool) error {
+
+	url := fmt.Sprintf("%s/api/v0/meta/settings?refresh_token=%s", c.DTRURL, c.Token)
+
+	var dtrSettings struct {
+		EnableCreateOnPush bool `json:"scanningSyncOnline"`
+	}
+
+	dtrSettings.EnableCreateOnPush = enabled
+	log.Debugf("Setting sync online set to [%t]", enabled)
+	b, err := json.Marshal(dtrSettings)
+	if err != nil {
+		return nil
+	}
+	_, err = c.postRequest(url, b)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //DTRGetSettings - Return a struct of all DTR settings
 func (c *Client) DTRGetSettings() (*dtrtypes.DTRSettings, error) {
 	url := fmt.Sprintf("%s/api/v0/meta/settings?refresh_token=%s", c.DTRURL, c.Token)
