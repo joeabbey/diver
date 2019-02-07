@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/joeabbey/diver/pkg/dtr"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +12,7 @@ func init() {
 	dtrSettingsSet.PersistentFlags().BoolVar(&enable, "setting", true, "--setting=true/false will enable or disable this setting")
 	dtrSettingsSet.AddCommand(dtrSettingsCreateRepo)
 	dtrSettingsSet.AddCommand(dtrSettingsScanning)
+	dtrSettingsSet.AddCommand(dtrSettingsOnline)
 
 }
 

@@ -6,9 +6,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"github.com/joeabbey/diver/pkg/dtr"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	"github.com/joeabbey/diver/pkg/dtr/types"
 )

@@ -8,7 +8,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var containerCache []types.ContainerJSON

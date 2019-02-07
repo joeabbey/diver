@@ -6,7 +6,7 @@ import (
 
 	diff "github.com/thebsdbox/jd/lib"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/docker/docker/api/types/swarm"
 )
 

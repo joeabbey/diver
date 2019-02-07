@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/joeabbey/diver/pkg/ucp"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var ucpClient ucp.Client

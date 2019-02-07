@@ -5,8 +5,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/joeabbey/diver/pkg/dtr"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

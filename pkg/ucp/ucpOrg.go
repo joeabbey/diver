@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"text/tabwriter"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/joeabbey/diver/pkg/ucp/types"
 )
 

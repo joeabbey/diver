@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/joeabbey/diver/pkg/ucp"
 	"github.com/joeabbey/diver/pkg/ucp/types"
