@@ -6,7 +6,7 @@ import (
 
 	"github.com/joeabbey/diver/pkg/ucp/types"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func (c *Client) returnAllCollections() ([]byte, error) {

@@ -62,3 +62,19 @@ Scanning Enabled        false
 Scanning Online Sync    true
 Scanning Auto Recheck   false
 ```
+### Settings Set Commands
+
+  ```
+  diver dtr settings set createrepo --setting={false/true}
+  ```  
+  Create a repository on Push
+
+  ```
+  diver dtr settings set online --setting={false/true}
+  ```
+  Scanning online sync
+  
+  ```
+  diver dtr settings set scanning --setting={false/true}   
+  ```
+  DTR Image scanning

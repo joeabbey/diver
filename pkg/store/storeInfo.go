@@ -6,7 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 //UserAccount - The struct that is returned by interacting with the Docker Store

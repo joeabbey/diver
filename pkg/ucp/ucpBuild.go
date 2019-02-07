@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // BuildPlan - This collection of bools builds the output from a service query

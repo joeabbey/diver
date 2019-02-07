@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types"
+	log "github.com/sirupsen/logrus"
 )
 
 var networkCache []types.NetworkResource

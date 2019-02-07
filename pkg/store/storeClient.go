@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Client - Is the basic Client struct
